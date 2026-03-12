@@ -1,59 +1,470 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SaaS Project Management Platform
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A modern **team collaboration and project management platform** that helps teams organize projects, manage tasks, and collaborate efficiently.
 
-## About Laravel
+The system allows teams to create **workspaces**, manage **projects**, organize work using **Kanban boards**, assign **tasks**, communicate through **comments**, and track activity across the entire team.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Although the system follows **SaaS architecture patterns**, it is designed to be **completely free** with **no subscription plans or feature limitations**.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+This project demonstrates the ability to build a **production-ready full-stack collaboration system** using modern technologies and scalable architecture.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+# Project Objectives
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+The main objective of this project is to build a **real-world team collaboration platform** that demonstrates advanced full-stack engineering skills.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+The project focuses on:
 
-## Laravel Sponsors
+• multi-tenant architecture
+• collaborative task management
+• scalable backend design
+• modern frontend UI system
+• Kanban workflow management
+• activity tracking and notifications
+• modular application architecture
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+This project is designed to simulate a **real SaaS product used by teams**, even though it does not include paid plans.
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+# Technology Stack
 
-## Contributing
+## Backend
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+* **Laravel 12**
+* **PHP 8.3**
+* **MySQL**
+* **Redis** (queues and caching)
 
-## Code of Conduct
+## Frontend
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+* **Vue 3**
+* **Pinia** (state management)
+* **Vue Router**
+* **Tailwind CSS**
+* **shadcn-vue UI component system**
 
-## Security Vulnerabilities
+## Infrastructure
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+* Redis queue workers
+* REST API architecture
+* modular Laravel structure
+* local or cloud file storage
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# System Architecture
+
+The application follows a **modular architecture** where each feature area is organized into independent modules.
+
+Major backend modules include:
+
+* Authentication
+* Workspaces
+* Members
+* Projects
+* Boards
+* Tasks
+* Comments
+* Files
+* Notifications
+* Activity Logs
+
+Each module includes:
+
+• models
+• controllers
+• services
+• policies
+• API routes
+
+This architecture keeps the system **maintainable, scalable, and easy to extend**.
+
+---
+
+# Core System Concepts
+
+## Workspace
+
+A workspace represents an **organization or team**.
+
+Examples:
+
+• company
+• startup
+• agency team
+• department
+
+Each workspace contains:
+
+* members
+* projects
+* boards
+* tasks
+* activity logs
+
+Workspaces are **fully isolated from each other**, implementing a **multi-tenant architecture**.
+
+---
+
+## Members
+
+Members are users invited into a workspace.
+
+Members can:
+
+• collaborate on projects
+• create and manage tasks
+• comment on tasks
+• upload files
+• receive notifications
+
+Members can have different roles that determine their permissions.
+
+---
+
+## Projects
+
+Projects represent major work initiatives inside a workspace.
+
+Examples:
+
+• website redesign
+• mobile app development
+• marketing campaign
+• product launch
+
+Each project contains:
+
+* boards
+* tasks
+* project members
+* activity history
+
+---
+
+## Boards
+
+Boards provide a **Kanban workflow** for organizing tasks visually.
+
+Typical columns include:
+
+Backlog → Todo → In Progress → Review → Done
+
+Boards allow teams to **track progress and manage workflow efficiently**.
+
+---
+
+## Tasks
+
+Tasks represent individual units of work.
+
+Each task includes:
+
+* title
+* description
+* assigned members
+* labels
+* priority
+* due date
+* attachments
+* comments
+* column status
+
+Tasks move between board columns as work progresses.
+
+---
+
+# Core Features
+
+## Authentication System
+
+Users can:
+
+• register
+• login
+• logout
+• reset passwords
+
+Authentication uses **Laravel Sanctum**.
+
+Features include:
+
+* secure API authentication
+* token-based sessions
+* protected endpoints
+
+---
+
+# Workspace Management
+
+Users can create and manage workspaces.
+
+Features include:
+
+• create workspace
+• update workspace details
+• invite members
+• manage member roles
+• remove members
+
+Workspace owners control the workspace.
+
+---
+
+# Member Collaboration
+
+Workspaces support team collaboration.
+
+Features include:
+
+* email invitations
+* role assignment
+* member management
+* project participation
+
+---
+
+# Project Management
+
+Users can create and manage projects within a workspace.
+
+Features include:
+
+• create project
+• edit project
+• archive project
+• assign project members
+• project descriptions and metadata
+
+Projects organize work for teams.
+
+---
+
+# Kanban Board System
+
+Each project includes a Kanban board.
+
+Features include:
+
+• drag-and-drop tasks
+• customizable columns
+• reorder columns
+• reorder tasks
+
+This allows teams to visually manage work progress.
+
+---
+
+# Task Management
+
+Tasks are the central component of the platform.
+
+Users can:
+
+• create tasks
+• edit tasks
+• assign members
+• add descriptions
+• set due dates
+• define priority
+• add labels
+
+Tasks move across board columns.
+
+---
+
+# Task Comments
+
+Tasks support collaborative discussion.
+
+Users can:
+
+• add comments
+• reply to comments
+• mention users
+• edit comments
+
+This allows teams to discuss work directly within tasks.
+
+---
+
+# File Attachments
+
+Tasks support file uploads.
+
+Examples include:
+
+* images
+* documents
+* screenshots
+* PDFs
+
+Files are stored using the application storage system.
+
+---
+
+# Activity Tracking
+
+The system records a full **activity timeline** for projects.
+
+Examples of tracked actions:
+
+* task created
+* task moved
+* task updated
+* member assigned
+* comment added
+
+Activity logs help teams understand project history.
+
+---
+
+# Dashboard
+
+Each user has a dashboard displaying:
+
+• assigned tasks
+• overdue tasks
+• active projects
+• recent activity
+• productivity statistics
+
+The dashboard provides a quick overview of work status.
+
+---
+
+# Notifications
+
+Users receive notifications for important events.
+
+Examples include:
+
+* task assignments
+* mentions in comments
+* task updates
+* due date reminders
+
+Notifications may include:
+
+* in-app notifications
+* optional email alerts
+
+---
+
+# Search and Filtering
+
+Users can search and filter tasks.
+
+Filters include:
+
+* project
+* assigned user
+* due date
+* task status
+* labels
+
+This helps manage large projects.
+
+---
+
+# Role-Based Access Control
+
+The system supports roles:
+
+### Owner
+
+Full workspace control.
+
+### Admin
+
+Manage projects and members.
+
+### Member
+
+Collaborate on tasks and projects.
+
+This ensures secure access management.
+
+---
+
+# User Interface System
+
+The frontend uses **shadcn-vue**, a modern UI component system built on **Radix Vue** and **Tailwind CSS**.
+
+This ensures:
+
+* accessible components
+* consistent UI
+* customizable styling
+* professional SaaS design
+
+---
+
+# UI Layout Structure
+
+The application uses a **modern SaaS dashboard layout**.
+
+Layout structure:
+
+Sidebar Navigation
+Main Content Area
+Optional Right Panels
+
+Sidebar includes:
+
+* Dashboard
+* Projects
+* My Tasks
+* Members
+* Notifications
+* Settings
+
+The UI emphasizes **clarity, speed, and usability**.
+
+---
+
+# Key Frontend Pages
+
+The main pages include:
+
+Dashboard
+Projects List
+Project Board
+Task Details
+Members Management
+Notifications
+Workspace Settings
+User Profile
+
+---
+
+# Scalability Considerations
+
+The system is designed with scalability in mind.
+
+Key practices include:
+
+* Redis queues for background jobs
+* optimized database queries
+* modular backend architecture
+* efficient API design
+* asynchronous processing
+
+These practices allow the system to support larger teams.
+
+---
+
+# Portfolio Value
+
+This project demonstrates expertise in:
+
+• Laravel backend engineering
+• Vue frontend development
+• modern UI architecture
+• scalable database design
+• collaboration system design
+• SaaS-style architecture
+
+It shows the ability to build a **complex real-world application used by teams**.
