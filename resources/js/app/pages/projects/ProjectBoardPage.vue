@@ -34,61 +34,117 @@
     </template>
 
     <template v-else>
-      <div class="flex gap-4 overflow-x-auto pb-4">
-        <div
-          v-for="col in columnsWithTasks"
-          :key="col.id"
-          class="min-w-[280px] flex-shrink-0 rounded-xl border border-gray-200 bg-gray-50/50 p-4"
-        >
-          <div class="flex items-center justify-between gap-2">
-            <h3
-              v-if="!editingColumnId || editingColumnId !== col.id"
-              class="text-sm font-semibold text-gray-900"
-              @dblclick="startEditColumn(col)"
-            >
-              {{ col.name }}
-            </h3>
-            <input
-              v-else
-              ref="columnNameInput"
-              v-model="editingColumnName"
-              type="text"
-              class="flex-1 rounded border border-indigo-500 px-2 py-1 text-sm"
-              @blur="saveColumnName(col)"
-              @keydown.enter="saveColumnName(col)"
+      <div class="space-y-4">
+        <div class="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-4 rounded-lg bg-white/95 py-2 backdrop-blur sm:bg-white sm:py-0">
+          <div class="flex flex-wrap items-center gap-4">
+            <BoardFilterBar
+              :filters="boardFilters"
+              :project-members="projectMembers"
+              :labels="labels"
+              @update:filter="({ key, value }) => (boardFilters[key] = value)"
+              @clear-filters="clearFilters"
             />
-            <button
-              type="button"
-              class="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
-              title="Delete column"
-              @click="deleteColumn(col)"
-            >
-              ×
-            </button>
-          </div>
-          <div class="mt-3 space-y-2">
-            <TaskCard
-              v-for="t in col.tasks"
-              :key="t.id"
-              :task="t"
-              @click="openTask(t)"
-            />
-            <button
-              type="button"
-              class="w-full rounded-lg border-2 border-dashed border-gray-300 py-2 text-sm text-gray-500 hover:border-indigo-400 hover:text-indigo-600"
-              @click="startAddTask(col)"
-            >
-              + Add task
-            </button>
+              <BoardViewSelector
+                :saved-views="savedViews"
+                :save-view="saveCurrentView"
+                :delete-view-fn="deleteSavedView"
+                @apply-view="applySavedView"
+              />
+              <select
+                v-model="sortMode"
+                class="rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              >
+                <option v-for="opt in SORT_MODES" :key="opt.value" :value="opt.value">
+                  {{ opt.label }}
+                </option>
+              </select>
+              <div class="relative">
+                <input
+                  v-model="searchInput"
+                  type="text"
+                  placeholder="Search tasks..."
+                  class="w-48 rounded-lg border border-gray-300 py-1.5 pl-3 pr-8 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+                <button
+                  v-if="searchQuery"
+                  type="button"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  @click="(searchInput = ''), (searchQuery = '')"
+                >
+                  ×
+                </button>
+              </div>
           </div>
         </div>
-        <button
+        <BoardSkeleton v-if="boardLoading" :column-count="4" :card-count="3" />
+        <template v-else-if="boardColumns.length === 0 && searchQuery">
+          <EmptyColumnState message="No tasks match your search">
+            <template #action>
+              <button
+                type="button"
+                class="mt-2 text-sm text-indigo-600 hover:underline"
+                @click="(searchInput = ''), (searchQuery = '')"
+              >
+                Clear search
+              </button>
+            </template>
+          </EmptyColumnState>
+        </template>
+        <template v-else-if="boardColumns.length === 0 && !hasActiveFilters && !searchQuery">
+          <EmptyColumnState message="Add your first column to get started">
+            <template #action>
+              <Button class="mt-2" size="sm" @click="showAddColumn = true">Add column</Button>
+            </template>
+          </EmptyColumnState>
+        </template>
+        <template v-else-if="boardColumns.every((c) => (c.tasks ?? []).length === 0) && hasActiveFilters">
+          <EmptyColumnState message="No tasks match filters">
+            <template #action>
+              <button
+                type="button"
+                class="mt-2 text-sm text-indigo-600 hover:underline"
+                @click="clearFilters"
+              >
+                Clear filters
+              </button>
+            </template>
+          </EmptyColumnState>
+        </template>
+        <div v-else class="flex min-w-max flex-nowrap gap-4 overflow-x-auto pb-4">
+          <draggable
+          v-model="boardColumns"
+          item-key="id"
+          tag="div"
+          class="flex gap-4 overflow-x-auto min-w-0 flex-1"
+          :class="{ 'opacity-70': reorderingColumns }"
+          ghost-class="opacity-50"
+          chosen-class="shadow-md"
+          :disabled="sortMode !== 'manual' || !!searchQuery"
+          @end="handleColumnReorder"
+          @start="reorderingColumns = true"
+        >
+          <template #item="{ element: col }">
+            <BoardColumn
+              :column="col"
+              :tasks="col.tasks"
+              :allow-task-drag="sortMode === 'manual' && !searchQuery"
+              @update:tasks="(t) => updateColumnTasks(col.id, t)"
+              @task-click="openTask"
+              @add-task="startAddTask(col)"
+              @delete-column="deleteColumn(col)"
+              @task-moved="handleTaskMoved"
+              @column-rename="(name) => saveColumnName(col, name)"
+            />
+          </template>
+          </draggable>
+          <button
           type="button"
           class="flex min-w-[280px] flex-shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-gray-300 text-sm text-gray-500 hover:border-indigo-400 hover:text-indigo-600"
           @click="showAddColumn = true"
         >
-          + Add column
-        </button>
+            + Add column
+          </button>
+        </div>
       </div>
     </template>
 
@@ -168,6 +224,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
+import { useDebounceFn } from '@vueuse/core';
 import { useRoute } from 'vue-router';
 import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { projectService } from '../../services/projectService';
@@ -178,8 +235,16 @@ import { projectMemberService } from '../../services/projectMemberService';
 import { labelService } from '../../services/labelService';
 import { subtaskService } from '../../services/subtaskService';
 import { taskActivityService } from '../../services/taskActivityService';
+import { boardViewService } from '../../services/boardViewService';
+import { VueDraggableNext as draggable } from 'vue-draggable-next';
+import { useBoardFilters } from '../../composables/useBoardFilters';
+import { useBoardSort } from '../../composables/useBoardSort';
 import Button from '../../components/ui/Button.vue';
-import TaskCard from '../../components/tasks/TaskCard.vue';
+import BoardColumn from '../../components/boards/BoardColumn.vue';
+import BoardFilterBar from '../../components/boards/BoardFilterBar.vue';
+import BoardViewSelector from '../../components/boards/BoardViewSelector.vue';
+import BoardSkeleton from '../../components/boards/BoardSkeleton.vue';
+import EmptyColumnState from '../../components/boards/EmptyColumnState.vue';
 import TaskDetailsDrawer from '../../components/tasks/TaskDetailsDrawer.vue';
 import Card from '../../components/ui/Card.vue';
 import CardContent from '../../components/ui/CardContent.vue';
@@ -196,9 +261,9 @@ const newBoardName = ref('');
 const newColumnName = ref('');
 const creating = ref(false);
 const addingColumn = ref(false);
-const editingColumnId = ref(null);
-const editingColumnName = ref('');
 const columnsWithTasks = ref([]);
+const movingTask = ref(false);
+const reorderingColumns = ref(false);
 const showAddTask = ref(false);
 const addTaskColumn = ref(null);
 const newTaskTitle = ref('');
@@ -209,20 +274,38 @@ const taskActivities = ref([]);
 
 const projectId = computed(() => route.params.id);
 
+const { boardFilters, clearFilters, applyFilters } = useBoardFilters();
+const { sortMode, SORT_MODES, applySort } = useBoardSort();
+const filteredColumnsWithTasks = ref([]);
+const displayColumns = ref([]);
+const boardColumns = ref([]);
+const searchInput = ref('');
+const searchQuery = ref('');
+const savedViews = ref([]);
+const boardLoading = ref(false);
+
 const currentBoard = computed(() =>
   boards.value.find((b) => b.id === selectedBoardId.value)
 );
+
+const hasActiveFilters = computed(() => {
+  const f = boardFilters.value;
+  return f.assignee != null || f.priority || f.label || f.status || f.overdueOnly;
+});
 
 async function fetchTasks() {
   const wid = workspaceStore.activeWorkspaceId;
   const pid = projectId.value;
   const bid = selectedBoardId.value;
   if (!wid || !pid || !bid) return;
+  boardLoading.value = true;
   try {
     const data = await taskService.list(wid, pid, bid);
     columnsWithTasks.value = data?.columns ?? [];
   } catch {
     columnsWithTasks.value = [];
+  } finally {
+    boardLoading.value = false;
   }
 }
 
@@ -388,8 +471,113 @@ watch([projectId, () => workspaceStore.activeWorkspaceId], () => {
 });
 
 watch(selectedBoardId, (id) => {
-  if (id) fetchTasks();
+  if (id) {
+    fetchTasks();
+    fetchSavedViews();
+  }
 }, { immediate: true });
+
+async function fetchSavedViews() {
+  const wid = workspaceStore.activeWorkspaceId;
+  const pid = projectId.value;
+  const bid = selectedBoardId.value;
+  if (!wid || !pid || !bid) return;
+  try {
+    const data = await boardViewService.list(wid, pid, bid);
+    savedViews.value = Array.isArray(data) ? data : (data?.data ?? []);
+  } catch {
+    savedViews.value = [];
+  }
+}
+
+function applySavedView(view) {
+  const fc = view.filter_config ?? {};
+  boardFilters.value = {
+    ...boardFilters.value,
+    assignee: fc.assignee ?? null,
+    priority: fc.priority ?? null,
+    label: fc.label ?? null,
+    status: fc.status ?? null,
+    overdueOnly: fc.overdue_only ?? false,
+  };
+  const sc = view.sort_config ?? {};
+  sortMode.value = sc.mode ?? 'manual';
+}
+
+async function saveCurrentView(name) {
+  const wid = workspaceStore.activeWorkspaceId;
+  const pid = projectId.value;
+  const bid = selectedBoardId.value;
+  if (!wid || !pid || !bid) return;
+  const filterConfig = {
+    assignee: boardFilters.value.assignee ?? null,
+    priority: boardFilters.value.priority ?? null,
+    label: boardFilters.value.label ?? null,
+    status: boardFilters.value.status ?? null,
+    overdue_only: boardFilters.value.overdueOnly ?? false,
+  };
+  const sortConfig = { mode: sortMode.value };
+  await boardViewService.create(wid, pid, bid, {
+    name,
+    filter_config: filterConfig,
+    sort_config: sortConfig,
+  });
+  await fetchSavedViews();
+}
+
+async function deleteSavedView(view) {
+  const wid = workspaceStore.activeWorkspaceId;
+  const pid = projectId.value;
+  const bid = selectedBoardId.value;
+  if (!wid || !pid || !bid) return;
+  await boardViewService.delete(wid, pid, bid, view.id);
+  await fetchSavedViews();
+}
+
+watch(
+  [columnsWithTasks, boardFilters],
+  () => {
+    filteredColumnsWithTasks.value = applyFilters(columnsWithTasks.value);
+  },
+  { immediate: true, deep: true }
+);
+
+watch(
+  [filteredColumnsWithTasks, sortMode],
+  () => {
+    displayColumns.value = applySort(filteredColumnsWithTasks.value, sortMode.value);
+  },
+  { immediate: true, deep: true }
+);
+
+function applySearch(columns, q) {
+  if (!columns) return [];
+  if (!q || !String(q).trim()) return columns;
+  const lower = String(q).trim().toLowerCase();
+  return columns.map((col) => ({
+    ...col,
+    tasks: (col.tasks ?? []).filter((t) => {
+      const title = (t.title || '').toLowerCase();
+      const desc = (t.description || '').toLowerCase();
+      const num = String(t.task_number || '').toLowerCase();
+      return title.includes(lower) || desc.includes(lower) || num.includes(lower);
+    }),
+  }));
+}
+
+const setSearchQuery = useDebounceFn((v) => {
+  searchQuery.value = v;
+}, 300);
+
+watch(searchInput, (v) => setSearchQuery(v));
+
+watch(
+  [displayColumns, searchQuery],
+  () => {
+    boardColumns.value = applySearch(displayColumns.value, searchQuery.value);
+  },
+  { immediate: true, deep: true }
+);
 
 watch([showTaskDrawer, selectedTaskId], async ([open, taskId]) => {
   if (open && taskId) {
@@ -418,33 +606,67 @@ async function addColumn() {
     await boardColumnService.create(wid, pid, bid, { name: newColumnName.value.trim() });
     showAddColumn.value = false;
     newColumnName.value = '';
-    await fetchBoards();
+    await fetchTasks();
   } finally {
     addingColumn.value = false;
   }
 }
 
-function startEditColumn(col) {
-  editingColumnId.value = col.id;
-  editingColumnName.value = col.name;
+function updateColumnTasks(columnId, newTasks) {
+  if (searchQuery.value) return;
+  const col = columnsWithTasks.value.find((c) => c.id === columnId);
+  if (col) col.tasks = newTasks;
 }
 
-async function saveColumnName(col) {
-  if (editingColumnId.value !== col.id) return;
+async function handleColumnReorder() {
+  reorderingColumns.value = false;
   const wid = workspaceStore.activeWorkspaceId;
   const pid = projectId.value;
   const bid = selectedBoardId.value;
   if (!wid || !pid || !bid) return;
+  const newOrder = boardColumns.value.map((c) => c.id);
+  const prevColumns = JSON.parse(JSON.stringify(columnsWithTasks.value));
+  columnsWithTasks.value = newOrder.map((id) =>
+    columnsWithTasks.value.find((c) => c.id === id)
+  ).filter(Boolean);
   try {
-    await boardColumnService.update(wid, pid, bid, col.id, { name: editingColumnName.value });
-    const board = boards.value.find((b) => b.id === bid);
-    if (board?.columns) {
-      const c = board.columns.find((x) => x.id === col.id);
-      if (c) c.name = editingColumnName.value;
-    }
+    await boardColumnService.reorder(wid, pid, bid, newOrder);
+  } catch {
+    columnsWithTasks.value = prevColumns;
+    await fetchTasks();
+  }
+}
+
+async function handleTaskMoved({ task, columnId, sortOrder }) {
+  const wid = workspaceStore.activeWorkspaceId;
+  const pid = projectId.value;
+  const bid = selectedBoardId.value;
+  if (!wid || !pid || !bid || !task?.id) return;
+  movingTask.value = true;
+  const prevColumns = JSON.parse(JSON.stringify(columnsWithTasks.value));
+  try {
+    await taskService.move(wid, pid, bid, task.id, columnId, sortOrder);
+    await fetchTasks();
+  } catch {
+    columnsWithTasks.value = prevColumns;
+    filteredColumnsWithTasks.value = applyFilters(columnsWithTasks.value);
+    await fetchTasks();
   } finally {
-    editingColumnId.value = null;
-    editingColumnName.value = '';
+    movingTask.value = false;
+  }
+}
+
+async function saveColumnName(col, name) {
+  const wid = workspaceStore.activeWorkspaceId;
+  const pid = projectId.value;
+  const bid = selectedBoardId.value;
+  if (!wid || !pid || !bid || !name?.trim()) return;
+  try {
+    await boardColumnService.update(wid, pid, bid, col.id, { name: name.trim() });
+    const c = columnsWithTasks.value.find((x) => x.id === col.id);
+    if (c) c.name = name.trim();
+  } catch {
+    await fetchTasks();
   }
 }
 
@@ -456,7 +678,7 @@ async function deleteColumn(col) {
   if (!wid || !pid || !bid) return;
   try {
     await boardColumnService.delete(wid, pid, bid, col.id);
-    await fetchBoards();
+    await fetchTasks();
   } catch (e) {
     alert(e.response?.data?.message ?? 'Failed to delete column.');
   }

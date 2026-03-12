@@ -41,4 +41,9 @@ class Board extends Model
     {
         return $this->hasMany(BoardColumn::class, 'board_id')->orderBy('sort_order');
     }
+
+    public function views(): HasMany
+    {
+        return $this->hasMany(BoardView::class);
+    }
 }

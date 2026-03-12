@@ -1,6 +1,6 @@
 <template>
   <div
-    class="cursor-pointer rounded-lg border border-gray-200 bg-white p-3 shadow-sm transition-shadow hover:shadow-md"
+    class="cursor-pointer rounded-lg border border-gray-200 bg-white p-3 shadow-sm transition-shadow transition-colors hover:shadow-md"
     @click="$emit('click', task)"
   >
     <p class="text-sm font-medium text-gray-900">{{ task.title }}</p>

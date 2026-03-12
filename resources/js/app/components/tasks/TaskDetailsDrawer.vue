@@ -7,7 +7,7 @@
     >
       <div class="fixed inset-0 bg-black/50" />
       <div
-        class="fixed right-0 top-0 h-full w-full max-w-lg overflow-y-auto bg-white shadow-xl sm:max-w-md"
+        class="fixed inset-0 overflow-y-auto bg-white shadow-xl sm:inset-y-0 sm:right-0 sm:left-auto sm:w-full sm:max-w-md"
         role="dialog"
       >
         <div v-if="loading" class="flex h-full items-center justify-center p-8">
@@ -207,7 +207,7 @@
 </template>
 
 <script setup>
-import { watch, ref } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import Avatar from '../ui/Avatar.vue';
 import Button from '../ui/Button.vue';
 import AssigneeSelector from './AssigneeSelector.vue';
@@ -367,4 +367,13 @@ watch(
 watch(() => props.activities, (val) => {
   activities.value = val ?? [];
 });
+
+function handleKeydown(e) {
+  if (e.key === 'Escape' && props.modelValue) {
+    emit('update:modelValue', false);
+  }
+}
+
+onMounted(() => document.addEventListener('keydown', handleKeydown));
+onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
 </script>
