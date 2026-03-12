@@ -2,16 +2,29 @@
   <div ref="rootRef" class="mb-4">
     <button
       type="button"
-      class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-100"
+      class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+      :aria-expanded="open"
+      aria-haspopup="listbox"
       @click="open = !open"
     >
       <Building2 class="h-5 w-5 shrink-0" />
       <span v-if="!uiStore.sidebarCollapsed" class="flex-1 truncate">
         {{ workspaceStore.activeWorkspace?.name ?? 'Select workspace' }}
       </span>
-      <ChevronDown v-if="!uiStore.sidebarCollapsed" class="h-4 w-4 shrink-0" />
+      <ChevronDown
+        v-if="!uiStore.sidebarCollapsed"
+        :class="['h-4 w-4 shrink-0 transition-transform', open && 'rotate-180']"
+      />
     </button>
-    <div v-if="open && !uiStore.sidebarCollapsed" class="mt-1 space-y-1 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+    <Transition
+      enter-active-class="transition duration-150 ease-out"
+      enter-from-class="opacity-0 -translate-y-1"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition duration-100 ease-in"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 -translate-y-1"
+    >
+      <div v-if="open && !uiStore.sidebarCollapsed" class="mt-1 space-y-1 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
       <button
         v-for="ws in workspaceStore.workspaces"
         :key="ws.id"
@@ -32,6 +45,7 @@
         + Create workspace
       </button>
     </div>
+    </Transition>
     <div v-if="showCreate" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30" @click.self="showCreate = false">
       <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
         <h3 class="text-lg font-semibold">Create workspace</h3>
@@ -63,6 +77,13 @@ const rootRef = ref(null);
 function handleClickOutside(e) {
   if (rootRef.value && !rootRef.value.contains(e.target)) open.value = false;
 }
+
+function handleKeydown(e) {
+  if (e.key === 'Escape') {
+    open.value = false;
+    showCreate.value = false;
+  }
+}
 const showCreate = ref(false);
 const newName = ref('');
 const creating = ref(false);
@@ -72,8 +93,12 @@ onMounted(() => {
     workspaceStore.fetchWorkspaces();
   }
   document.addEventListener('click', handleClickOutside);
+  document.addEventListener('keydown', handleKeydown);
 });
-onUnmounted(() => document.removeEventListener('click', handleClickOutside));
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
+  document.removeEventListener('keydown', handleKeydown);
+});
 
 function selectWorkspace(id) {
   workspaceStore.setActive(id);

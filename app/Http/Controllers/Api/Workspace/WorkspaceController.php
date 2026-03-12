@@ -53,7 +53,7 @@ class WorkspaceController extends Controller
         $this->authorize('update', $workspace);
 
         $data = $request->validated();
-        if (isset($data['name'])) {
+        if (isset($data['name']) && !isset($data['slug'])) {
             $data['slug'] = \Illuminate\Support\Str::slug($data['name']);
         }
         $workspace->update($data);

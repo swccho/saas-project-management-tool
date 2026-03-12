@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Workspace;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateWorkspaceRequest extends FormRequest
 {
@@ -12,12 +13,21 @@ class UpdateWorkspaceRequest extends FormRequest
     }
 
     /**
-     * @return array<string, array<int, string>>
+     * @return array<string, array<int, string|Rule>>
      */
     public function rules(): array
     {
+        $workspace = $this->route('workspace');
+
         return [
             'name' => ['sometimes', 'string', 'max:255'],
+            'slug' => [
+                'sometimes',
+                'string',
+                'max:255',
+                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+                Rule::unique('workspaces', 'slug')->ignore($workspace?->id),
+            ],
         ];
     }
 }

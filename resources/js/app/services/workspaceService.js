@@ -26,4 +26,9 @@ export const workspaceService = {
   async delete(id) {
     await apiClient.delete(`/workspaces/${id}`);
   },
+
+  async getMembers(id) {
+    const res = await apiClient.get(`/workspaces/${id}/members`);
+    return res.data?.data ?? res.data;
+  },
 };

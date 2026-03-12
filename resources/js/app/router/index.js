@@ -22,8 +22,29 @@ const routes = [
     children: [
       { path: '', name: 'dashboard', component: () => import('../pages/dashboard/DashboardPage.vue') },
       { path: 'projects', name: 'projects', component: () => import('../pages/projects/ProjectsPage.vue') },
+      {
+        path: 'projects/:id',
+        name: 'project-detail',
+        component: () => import('../pages/projects/ProjectDetailPage.vue'),
+      },
+      {
+        path: 'projects/:id/members',
+        name: 'project-members',
+        component: () => import('../pages/projects/ProjectMembersPage.vue'),
+      },
+      {
+        path: 'projects/:id/board',
+        name: 'project-board',
+        component: () => import('../pages/projects/ProjectBoardPage.vue'),
+      },
+      {
+        path: 'projects/:id/settings',
+        name: 'project-settings',
+        component: () => import('../pages/projects/ProjectSettingsPage.vue'),
+      },
       { path: 'my-tasks', name: 'my-tasks', component: () => import('../pages/tasks/MyTasksPage.vue') },
       { path: 'settings', name: 'settings', component: () => import('../pages/settings/SettingsPage.vue') },
+      { path: 'settings/workspace', name: 'settings-workspace', component: () => import('../pages/settings/WorkspaceSettingsPage.vue') },
     ],
   },
 ];

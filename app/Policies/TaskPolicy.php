@@ -2,32 +2,30 @@
 
 namespace App\Policies;
 
+use App\Models\Task;
 use App\Models\User;
 
 class TaskPolicy
 {
-    public function viewAny(User $user): bool
+    public function view(User $user, Task $task): bool
     {
-        return true;
+        return $user->workspaces()->where('workspaces.id', $task->workspace_id)->exists();
     }
 
-    public function view(User $user, mixed $task): bool
+    public function create(User $user, $column): bool
     {
-        return false;
+        return $user->workspaces()
+            ->where('workspaces.id', $column->board->project->workspace_id)
+            ->exists();
     }
 
-    public function create(User $user): bool
+    public function update(User $user, Task $task): bool
     {
-        return true;
+        return $user->workspaces()->where('workspaces.id', $task->workspace_id)->exists();
     }
 
-    public function update(User $user, mixed $task): bool
+    public function delete(User $user, Task $task): bool
     {
-        return false;
-    }
-
-    public function delete(User $user, mixed $task): bool
-    {
-        return false;
+        return $user->workspaces()->where('workspaces.id', $task->workspace_id)->exists();
     }
 }
