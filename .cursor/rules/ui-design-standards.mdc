@@ -1,0 +1,995 @@
+---
+description: UI design standards for the SaaS Project Management Platform using Linear-style boards, Stripe-style dashboards, shadcn-vue, Tailwind CSS, and modern SaaS design principles
+globs:
+  - resources/**
+  - app/**
+alwaysApply: false
+---
+
+# UI Design Standards
+
+This project uses a **Linear + Stripe inspired UI system**.
+
+That means:
+
+- **Linear-style boards**
+- **Stripe-style dashboards**
+- **shadcn-vue components**
+- **minimal color palette**
+- **modern typography**
+- **clean startup SaaS look**
+
+The UI must feel:
+
+- modern
+- minimal
+- premium
+- fast
+- structured
+- professional
+
+It must not feel:
+
+- cluttered
+- noisy
+- over-colored
+- outdated
+- template-like
+- overly "admin panel" styled
+
+---
+
+# 1. Core Visual Direction
+
+The product should visually feel like a combination of:
+
+- Linear
+- Stripe Dashboard
+- Vercel Dashboard
+- Supabase Dashboard
+
+UI priorities:
+
+- clean information hierarchy
+- whitespace-first layout
+- subtle visual separation
+- strong typography
+- low-noise interfaces
+- calm neutral surfaces
+- clear interaction states
+
+Rules:
+
+- do not overuse bright colors
+- do not use gradients unless there is a very strong reason
+- do not use heavy shadows
+- do not use large decorative illustrations unless the page truly needs one
+- do not make dashboards feel crowded
+- prefer elegance over visual excitement
+
+---
+
+# 2. Design Tokens
+
+## 2.1 Color System
+
+Use a minimal SaaS color palette.
+
+Primary color:
+
+```text
+#6366F1
+```
+
+Primary hover:
+
+```text
+#5558E8
+```
+
+Primary foreground:
+
+```text
+#FFFFFF
+```
+
+Background:
+
+```text
+#FAFAFA
+```
+
+Surface / card background:
+
+```text
+#FFFFFF
+```
+
+Muted surface:
+
+```text
+#F5F5F5
+```
+
+Border:
+
+```text
+#E5E7EB
+```
+
+Primary text:
+
+```text
+#111827
+```
+
+Secondary text:
+
+```text
+#6B7280
+```
+
+Muted text:
+
+```text
+#9CA3AF
+```
+
+Success:
+
+```text
+#22C55E
+```
+
+Warning:
+
+```text
+#F59E0B
+```
+
+Danger:
+
+```text
+#EF4444
+```
+
+Info:
+
+```text
+#3B82F6
+```
+
+Rules:
+
+* use primary color sparingly for important actions and active states
+* most of the interface should rely on neutrals
+* status colors should be used mainly for badges, indicators, alerts, and state labels
+* never make the whole UI feel colorful by default
+
+---
+
+## 2.2 Typography
+
+Use:
+
+* **Inter** for all primary UI text
+
+Typography should feel modern, clear, and product-focused.
+
+Preferred text styles:
+
+Page title:
+
+```text
+text-2xl font-semibold tracking-tight
+```
+
+Section title:
+
+```text
+text-lg font-semibold
+```
+
+Card title:
+
+```text
+text-sm font-medium
+```
+
+Body text:
+
+```text
+text-sm text-foreground
+```
+
+Secondary body text:
+
+```text
+text-sm text-muted-foreground
+```
+
+Caption / metadata:
+
+```text
+text-xs text-muted-foreground
+```
+
+Large stat number:
+
+```text
+text-2xl font-semibold
+```
+
+Rules:
+
+* do not use too many font sizes
+* hierarchy should come from weight, spacing, and placement more than giant text jumps
+* avoid overly bold UI everywhere
+* titles should feel compact and clean, not oversized
+
+---
+
+## 2.3 Radius, Borders, and Shadows
+
+Preferred radius:
+
+```text
+rounded-xl
+```
+
+Small elements:
+
+```text
+rounded-md
+```
+
+Buttons / inputs:
+
+```text
+rounded-lg
+```
+
+Preferred border:
+
+```text
+border border-border
+```
+
+Preferred shadow:
+
+```text
+shadow-sm
+```
+
+Rules:
+
+* keep shadows subtle
+* rely on borders and spacing more than dramatic shadows
+* avoid large soft floating-card styles for every component
+* cards should feel crisp and modern
+
+---
+
+## 2.4 Spacing System
+
+Use a generous but controlled spacing system.
+
+Common layout spacing:
+
+```text
+gap-6
+space-y-6
+p-6
+px-6
+py-6
+```
+
+Compact internal spacing:
+
+```text
+gap-3
+gap-4
+space-y-3
+space-y-4
+```
+
+Dense metadata spacing:
+
+```text
+gap-2
+text-xs
+```
+
+Rules:
+
+* do not cram content
+* use whitespace to create hierarchy
+* dashboards and boards should breathe
+* avoid inconsistent padding between similar components
+
+---
+
+# 3. Layout Standards
+
+## 3.1 App Shell
+
+The app uses a modern SaaS shell:
+
+```text
+Sidebar
+Top Header
+Main Content Area
+Optional Right Drawer / Sheet
+```
+
+Rules:
+
+* sidebar is fixed or stable on desktop
+* header stays clean and compact
+* main content should feel spacious
+* avoid nested containers that make the UI feel boxed in too many times
+
+---
+
+## 3.2 Sidebar
+
+Sidebar style should be minimal and product-like.
+
+Sidebar includes:
+
+* logo / product identity
+* main navigation
+* workspace switcher if needed
+* settings entry
+* user/workspace footer area if needed
+
+Recommended width:
+
+```text
+w-64
+```
+
+Sidebar styling:
+
+* white or near-white background
+* subtle right border
+* small clean icons
+* compact labels
+* active state using muted primary background or subtle accent
+* no heavy gradients
+* no oversized branding area
+
+Rules:
+
+* navigation should feel calm and easy to scan
+* do not over-style the sidebar
+* active nav item should be obvious but not loud
+* use Lucide icons consistently
+
+---
+
+## 3.3 Top Header
+
+Top header may include:
+
+* page title
+* search
+* workspace/project context
+* notifications
+* user menu
+* primary action button if needed
+
+Rules:
+
+* keep the header light and uncluttered
+* do not pack too many controls into one row
+* page-level actions should be aligned consistently
+* search should feel integrated, not oversized
+
+---
+
+## 3.4 Main Content Area
+
+Main content should follow a consistent width and spacing rhythm.
+
+Rules:
+
+* use `p-6` as the default page padding
+* keep page sections separated with `space-y-6`
+* use grid layouts for dashboards where helpful
+* avoid random width changes between pages
+* pages should feel like part of one product family
+
+---
+
+# 4. Component Standards
+
+## 4.1 General Component Philosophy
+
+Use shadcn-vue components whenever appropriate.
+
+Components should feel:
+
+* crisp
+* neutral
+* accessible
+* reusable
+* minimal
+
+Rules:
+
+* do not visually reinvent the same component in multiple ways
+* prefer a single strong component style over many inconsistent variants
+* reusable components must remain visually aligned
+
+---
+
+## 4.2 Buttons
+
+Button system should stay restrained.
+
+Primary button:
+
+* use for main page action
+* solid primary color
+* compact but clear
+
+Secondary button:
+
+* muted or outline style
+* use for supportive actions
+
+Ghost button:
+
+* use for lightweight actions in dense UI
+
+Destructive button:
+
+* use only for destructive actions
+
+Rules:
+
+* do not put too many primary buttons on the same screen
+* one main action per area should dominate
+* destructive actions should always be visually distinct
+* button sizes should stay consistent across the app
+
+---
+
+## 4.3 Cards
+
+Cards are a core UI building block.
+
+Cards should be used for:
+
+* stats
+* project summaries
+* panels
+* recent activity
+* table wrappers
+* settings sections
+
+Card style:
+
+* white background
+* light border
+* subtle shadow
+* rounded corners
+* generous padding
+
+Rules:
+
+* cards should separate content clearly
+* do not over-stack card-inside-card-inside-card layouts
+* prefer simple, strong panels
+
+---
+
+## 4.4 Tables
+
+Tables are important for:
+
+* projects
+* members
+* tasks (list view)
+* notifications/logs if needed
+
+Table style should be:
+
+* clean
+* highly readable
+* light borders
+* muted headers
+* compact but not cramped
+
+Rules:
+
+* use tables for structured data, not everything
+* rows should have good vertical rhythm
+* status badges and avatars should fit cleanly within rows
+* avoid overly dense spreadsheet-like design
+
+---
+
+## 4.5 Badges
+
+Badges are used for:
+
+* status
+* priority
+* role
+* labels/tags
+
+Rules:
+
+* badges should be compact
+* use muted variants when possible
+* use strong color only when semantic meaning matters
+* do not create too many badge styles
+
+Examples:
+
+* status badge
+* priority badge
+* role badge
+* label badge
+
+---
+
+## 4.6 Avatars
+
+Avatars are important in:
+
+* task cards
+* member lists
+* comments
+* activity timeline
+
+Rules:
+
+* avatar sizes should be consistent
+* use avatar stacks for multiple assignees
+* do not overcrowd cards with too many visible avatars
+* member presence should feel informative, not noisy
+
+---
+
+## 4.7 Dialogs / Drawers / Sheets
+
+Use dialogs or sheets for:
+
+* create/edit forms
+* confirmations
+* task details
+* quick actions
+
+Rules:
+
+* task details should preferably use a right-side drawer/sheet
+* destructive actions require confirmation dialog
+* forms inside dialogs must remain well-spaced and readable
+* avoid oversized full-screen modals unless necessary
+
+---
+
+## 4.8 Forms
+
+Forms must be clean and highly usable.
+
+Use:
+
+* Input
+* Textarea
+* Select
+* Combobox / Command
+* Checkbox
+* Radio
+* Switch
+* Date picker if needed
+
+Rules:
+
+* forms should always include clear labels
+* required fields should be visually indicated consistently
+* show validation errors inline
+* group related fields together
+* do not overload users with giant unstructured forms
+* long forms should be broken into sections
+
+---
+
+## 4.9 Empty States
+
+Every major list or content area should have a meaningful empty state.
+
+Empty states should include:
+
+* short clear title
+* one-line explanation
+* primary CTA when relevant
+
+Rules:
+
+* empty states must feel intentional
+* avoid generic "No data" without guidance
+* keep empty states simple and product-like
+
+---
+
+## 4.10 Loading States
+
+Loading must be polished.
+
+Use:
+
+* skeletons
+* spinner only for small inline states
+* subtle pending indicators on buttons
+
+Rules:
+
+* avoid blank pages while loading
+* use skeleton cards/tables for main page loads
+* use button loaders for actions
+* do not show giant blocking spinners for every action
+
+---
+
+# 5. Dashboard Standards (Stripe-style)
+
+The dashboard should feel like **Stripe / Vercel / Supabase**.
+
+Dashboard sections may include:
+
+* top stat cards
+* recent activity
+* my tasks
+* active projects
+* upcoming deadlines
+* team summary
+
+Rules:
+
+* dashboard should be structured and calm
+* stat cards should be concise and readable
+* avoid overloading the dashboard with too many widgets
+* charts should only be used where they genuinely help
+* recent activity should feel like a polished product feed
+
+Dashboard layout should typically use:
+
+* top row stats
+* middle content grid
+* bottom detail sections
+
+Stat cards should include:
+
+* title
+* value
+* optional trend / context
+* small supporting text
+
+---
+
+# 6. Board Standards (Linear-style)
+
+The board is the core experience and should feel **Linear-like**.
+
+Columns should be:
+
+* clean
+* spacious
+* easy to scan
+* clearly separated
+* not overly colorful
+
+Use typical columns like:
+
+* Backlog
+* Todo
+* In Progress
+* Review
+* Done
+
+Rules:
+
+* column headers should be compact and strong
+* column width should feel balanced
+* avoid heavy card decoration
+* focus on readable task information
+* board interactions should feel fast and lightweight
+
+---
+
+## 6.1 Task Cards
+
+Task cards should contain only useful information.
+
+Preferred content:
+
+* task title
+* label(s) if relevant
+* assignee avatars
+* due date if present
+* priority indicator
+* small metadata only
+
+Rules:
+
+* do not overload task cards with excessive details
+* task title should remain the main focus
+* metadata should feel secondary and compact
+* task cards should look calm, not noisy
+
+---
+
+## 6.2 Board Interactions
+
+Board interactions should support:
+
+* drag and drop
+* quick create task
+* open task details drawer
+* hover actions if useful
+* keyboard-friendly navigation if implemented later
+
+Rules:
+
+* interactions must feel smooth
+* hover states should be subtle
+* active drag states should be obvious but clean
+* avoid flashy animation
+
+---
+
+# 7. Task Details Standards
+
+Task details should open in a right-side drawer or sheet.
+
+Drawer sections may include:
+
+* title
+* description
+* assignees
+* labels
+* due date
+* priority
+* subtasks
+* attachments
+* comments
+* activity
+
+Recommended tabs:
+
+* Description
+* Subtasks
+* Attachments
+* Activity
+
+Rules:
+
+* task details should feel structured and premium
+* content should be split clearly into sections
+* metadata controls should be easy to update
+* discussion/activity should feel collaborative and readable
+
+---
+
+# 8. Page-Specific Standards
+
+## 8.1 Projects Page
+
+Projects page may support:
+
+* list view or card view
+* search
+* filters
+* create project action
+
+Rules:
+
+* use clean card or table presentation
+* project name and status should be easily scannable
+* progress and team information should be secondary but visible
+* filters should not overpower the content
+
+---
+
+## 8.2 Members Page
+
+Members page should feel structured and trustworthy.
+
+Display:
+
+* avatar
+* name
+* email
+* role
+* status
+* actions
+
+Rules:
+
+* role/status should use restrained badges
+* actions should use dropdowns where appropriate
+* membership management should feel clean and safe
+
+---
+
+## 8.3 Notifications Page
+
+Notifications should be simple and highly readable.
+
+Rules:
+
+* clear unread vs read state
+* concise notification text
+* optional timestamp
+* easy mark-as-read interactions
+* no visual clutter
+
+---
+
+## 8.4 Settings Page
+
+Settings should be broken into clear sections such as:
+
+* Workspace Settings
+* Members
+* Notifications
+* Account
+
+Rules:
+
+* settings pages should use card sections
+* destructive actions should be clearly separated
+* form sections should not feel crowded
+* keep settings calm and structured
+
+---
+
+# 9. Iconography
+
+Use:
+
+* **Lucide icons**
+
+Rules:
+
+* use one icon system across the app
+* icon size should be consistent
+* do not mix icon styles
+* icons should support meaning, not decoration overload
+
+Recommended icon size patterns:
+
+```text
+h-4 w-4
+h-5 w-5
+```
+
+---
+
+# 10. Motion and Interaction
+
+Animations should be subtle and purposeful.
+
+Allowed motion style:
+
+* soft hover transitions
+* light fade/scale for dropdowns/dialogs
+* subtle panel transitions
+* smooth drag interactions
+
+Rules:
+
+* avoid dramatic bounce animations
+* avoid flashy motion for productivity UI
+* movement should support clarity, not entertainment
+
+Preferred transition feel:
+
+* quick
+* smooth
+* understated
+
+---
+
+# 11. Responsive Behavior
+
+The UI must remain usable on smaller screens.
+
+Rules:
+
+* sidebar may collapse on smaller widths
+* tables should degrade gracefully
+* boards may become horizontally scrollable
+* drawers and dialogs should adapt for smaller screens
+* important actions must stay accessible
+
+Do not design only for large desktop screens.
+
+---
+
+# 12. Accessibility Standards
+
+Basic accessibility is required.
+
+Rules:
+
+* maintain sufficient text contrast
+* use semantic buttons and inputs
+* ensure focus states are visible
+* dialogs/sheets must handle focus correctly
+* forms must have labels
+* icon-only buttons must have accessible labels
+
+---
+
+# 13. Consistency Rules
+
+Before creating new UI:
+
+* check whether a similar component already exists
+* reuse component patterns whenever possible
+* follow the same spacing, radius, and typography rules
+* do not introduce one-off page styles without strong reason
+
+Consistency is more important than novelty.
+
+---
+
+# 14. Things to Avoid
+
+Do not generate UI that feels like:
+
+* a generic bootstrap admin template
+* a loud marketing website
+* an old enterprise panel
+* a colorful student dashboard
+* a cramped CRUD app
+
+Avoid:
+
+* too many colors
+* oversized shadows
+* inconsistent padding
+* random border radius changes
+* too many button variants
+* decorative gradients
+* overly dense task cards
+* giant hero sections inside app pages
+* multiple competing focal points on one screen
+
+---
+
+# 15. Definition of Good UI in This Project
+
+Good UI in this project means:
+
+* it feels like a startup SaaS product
+* it is calm and professional
+* information is easy to scan
+* the layout breathes
+* actions are obvious
+* boards are clean and fast
+* dashboards are structured and premium
+* components feel unified
+* it looks ready for real users
+
+---
+
+# 16. Final Design Rule
+
+Whenever generating UI for this project, prefer:
+
+* **Linear-style boards**
+* **Stripe-style dashboards**
+* **shadcn-vue components**
+* **neutral surfaces**
+* **minimal color palette**
+* **Inter typography**
+* **subtle borders and shadows**
+* **clean startup SaaS polish**
+
+If there is a choice between "more decorative" and "more product-like," always choose **more product-like**.

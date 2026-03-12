@@ -1,0 +1,734 @@
+---
+description: Rules for building the SaaS Project Management Platform with Laravel 12, PHP 8.3, Vue 3, MySQL, Redis, Tailwind, and shadcn-vue
+globs:
+  - app/**
+  - bootstrap/**
+  - config/**
+  - database/**
+  - resources/**
+  - routes/**
+  - tests/**
+alwaysApply: true
+---
+
+# Project Context
+
+This project is a **SaaS-style Project Management Platform** built for portfolio-quality, production-style engineering.
+
+Tech stack:
+
+- Laravel 12
+- PHP 8.3
+- MySQL
+- Redis
+- Vue 3
+- Pinia
+- Vue Router
+- Tailwind CSS
+- shadcn-vue
+
+The application is:
+
+- workspace-based
+- multi-tenant
+- completely free
+- not using billing
+- not using plan limits
+
+Main domains:
+
+- Authentication
+- Workspaces
+- Members
+- Projects
+- Boards
+- Board Columns
+- Tasks
+- Comments
+- Attachments
+- Notifications
+- Activity Logs
+- Dashboard
+
+---
+
+# Primary Goal
+
+Generate code that feels like a **real production application**, not a tutorial demo.
+
+Every implementation must be:
+
+- clean
+- maintainable
+- scalable
+- testable
+- consistent with Laravel and Vue best practices
+
+Avoid shortcuts that make the codebase messy later.
+
+---
+
+# Core Architecture Rules
+
+## 1. Thin controllers only
+
+Controllers must stay thin.
+
+Controllers may:
+
+- receive the request
+- authorize the action
+- call a service/action
+- return a resource/response
+
+Controllers must not contain:
+
+- heavy business logic
+- large condition trees
+- data transformation logic that belongs elsewhere
+- repeated workflow logic
+
+Use:
+
+- Form Requests for validation
+- Policies for authorization
+- Services/Actions for business logic
+- Resources for API responses when needed
+
+---
+
+## 2. Business logic belongs in services/actions
+
+Any non-trivial workflow must be placed in a dedicated service/action class.
+
+Examples:
+
+- CreateWorkspaceAction
+- InviteWorkspaceMemberAction
+- CreateProjectAction
+- ReorderBoardColumnsAction
+- MoveTaskToColumnAction
+- AssignTaskMembersAction
+- AddTaskCommentAction
+
+Rules:
+
+- one class should do one job
+- dependencies should be explicit
+- services should be reusable and testable
+- services should not depend on controller-only behavior
+
+---
+
+## 3. Multi-tenant workspace safety is mandatory
+
+This is a workspace-based application.
+Tenant isolation is a hard rule.
+
+Requirements:
+
+- every workspace-owned resource must always be scoped correctly
+- no user may access another workspace's data
+- do not trust frontend filtering
+- authorization must be enforced on the backend
+- queries must always respect workspace boundaries
+
+Common scoped entities include:
+
+- projects
+- boards
+- columns
+- tasks
+- comments
+- attachments
+- notifications
+- activity logs
+- members
+
+Whenever relevant, always verify:
+
+- the authenticated user belongs to the workspace
+- the target resource belongs to that workspace
+- the user has the correct role/permission
+
+---
+
+# Backend Rules
+
+## 4. Laravel conventions first
+
+Prefer Laravel conventions unless there is a strong reason not to.
+
+Use:
+
+- Eloquent relationships
+- Form Requests
+- Policies
+- Jobs
+- Events/Listeners
+- Notifications when appropriate
+- Resources for consistent API responses
+- database transactions for multi-step writes
+
+Do not invent custom patterns when Laravel already provides a strong solution.
+
+---
+
+## 5. Validation rules are mandatory
+
+All write operations must be validated on the backend.
+
+Rules:
+
+- never trust frontend validation alone
+- use Form Requests for request validation
+- validate enums/statuses/roles strictly
+- validate arrays and nested payloads explicitly
+- validate uploaded files by size and mime type
+- return clear validation messages
+
+---
+
+## 6. Authorization is mandatory
+
+Every protected action must be authorized on the backend.
+
+Use policies for:
+
+- view
+- create
+- update
+- delete
+- archive
+- invite
+- assign
+- reorder
+- comment
+- upload
+- manage members
+
+Do not rely on hidden buttons or frontend guards as security.
+
+---
+
+## 7. Use transactions for multi-step writes
+
+Use database transactions when a workflow updates multiple tables or depends on several writes succeeding together.
+
+Examples:
+
+- workspace creation with owner membership
+- project creation with default board columns
+- task move + activity log
+- member invite + membership record + notification
+- task comment + mentions + notifications
+
+Do not leave partial writes behind on failure.
+
+---
+
+## 8. API design must be predictable
+
+Build resource-oriented APIs.
+
+Rules:
+
+- use proper HTTP verbs
+- keep endpoints clear and predictable
+- paginate list endpoints
+- allow filters explicitly
+- return proper status codes
+- do not overload single endpoints with unrelated responsibilities
+
+Preferred API behavior:
+
+- 200 success
+- 201 created
+- 204 deleted with no content
+- 403 forbidden
+- 404 not found
+- 422 validation error
+
+---
+
+## 9. Use API Resources when response structure matters
+
+Use Laravel API Resources for:
+
+- complex entity responses
+- nested data responses
+- list endpoints needing consistent structure
+- preventing overexposure of model attributes
+
+Keep responses consistent across similar endpoints.
+
+---
+
+## 10. Activity logging should be intentional
+
+Important actions should create activity logs.
+
+Examples:
+
+- workspace created
+- project created
+- task created
+- task moved
+- task updated
+- member assigned
+- comment added
+- attachment uploaded
+
+Rules:
+
+- activity messages should be human-readable
+- logs should include actor and related entity metadata
+- avoid noisy low-value logs
+
+---
+
+## 11. Notifications should be relevant
+
+Generate notifications only for important user-facing events.
+
+Examples:
+
+- user assigned to task
+- user mentioned in comment
+- member invited
+- important task status changes
+- due date reminders if implemented
+
+Rules:
+
+- avoid spammy behavior
+- keep payloads structured
+- support read/unread state
+
+---
+
+# Database Rules
+
+## 12. Database design must stay relational and clear
+
+Use MySQL with proper relational modeling.
+
+Rules:
+
+- table names plural
+- foreign keys explicit
+- index foreign keys
+- index common filter columns
+- prefer relational design over dumping data into JSON
+- use JSON only when clearly justified
+- use proper column types and lengths
+- nullable only when truly optional
+
+Important indexed fields often include:
+
+- workspace_id
+- project_id
+- board_id
+- column_id
+- task_id
+- user_id
+- status
+- priority
+- due_date
+- position / sort order
+
+---
+
+## 13. Migrations must be clean and intentional
+
+Rules:
+
+- each migration should have one clear purpose
+- name migrations clearly
+- do not edit old shared migrations later
+- add new migrations for schema changes
+- define foreign key cascades intentionally
+
+---
+
+# Frontend Rules
+
+## 14. Vue 3 Composition API only
+
+Use Vue 3 Composition API consistently.
+
+Rules:
+
+- keep components small and focused
+- split page components from reusable components
+- extract reusable logic into composables
+- avoid large monolithic page files
+- use clear props/emits structure
+
+---
+
+## 15. Use shadcn-vue for UI consistency
+
+The UI system must feel modern, consistent, and portfolio-quality.
+
+Use:
+
+- shadcn-vue
+- Tailwind CSS
+- Radix Vue primitives where appropriate
+
+Preferred UI patterns:
+
+- clean dashboard layout
+- sidebar navigation
+- cards
+- dialogs
+- dropdown menus
+- sheets/drawers
+- command components where helpful
+- badges
+- tables
+- tabs
+- toast feedback
+
+Do not mix many unrelated visual styles.
+
+---
+
+## 16. UX must feel polished
+
+Every feature should include proper UI states.
+
+Required states:
+
+- loading
+- empty
+- success
+- validation error
+- failure/error
+- destructive confirmation when needed
+
+Rules:
+
+- never leave blank screens during loading
+- show meaningful empty states
+- disable submit buttons during requests
+- show clear feedback after actions
+- destructive actions must ask for confirmation
+
+---
+
+## 17. State management with Pinia should be intentional
+
+Use Pinia only for shared or cross-page state.
+
+Good candidates:
+
+- auth
+- workspace context
+- notifications
+- shared filters
+- UI preferences if needed
+
+Do not move all state into Pinia by default.
+Prefer local component state when global state is unnecessary.
+
+---
+
+## 18. Component reuse is required
+
+Extract reusable UI components when patterns repeat.
+
+Examples:
+
+- AppSidebar
+- PageHeader
+- EmptyState
+- ConfirmDialog
+- TaskCard
+- BoardColumn
+- TaskPriorityBadge
+- MemberAvatarStack
+- ProjectCard
+- ActivityTimeline
+- NotificationList
+
+Avoid duplicate UI logic across pages.
+
+---
+
+# Testing Rules
+
+## 19. Testing is mandatory for important logic
+
+New features are not complete without tests where the logic is meaningful.
+
+Backend tests must cover:
+
+- authentication flows
+- authorization rules
+- workspace isolation
+- project CRUD
+- board/column operations
+- task CRUD
+- task movement
+- task assignment
+- comments
+- notifications
+- activity logs
+- validation failures
+
+Prefer:
+
+- Feature tests for endpoints and behavior
+- Unit tests for isolated services/actions
+
+Include happy path and failure path testing.
+
+---
+
+## 20. Always test tenant isolation
+
+This is one of the most important rules in the system.
+
+When writing tests for workspace-owned resources, include tests proving:
+
+- users cannot access another workspace's data
+- users cannot mutate another workspace's resources
+- unauthorized roles are blocked correctly
+
+---
+
+## 21. Use factories and realistic test setup
+
+Rules:
+
+- use model factories
+- create realistic workspace/member/project/task relationships
+- avoid repetitive setup by extracting helpers when appropriate
+- tests should stay readable and independent
+
+---
+
+# Security Rules
+
+## 22. Never trust the client
+
+Always validate and authorize on the backend.
+
+Do not trust:
+
+- workspace_id from the frontend without verification
+- role changes from editable payloads
+- hidden UI as access control
+- client-generated assumptions about ownership
+
+---
+
+## 23. File uploads must be safe
+
+For attachments:
+
+- validate mime type
+- validate max size
+- store files safely
+- generate safe stored filenames
+- never trust original filename alone
+
+---
+
+## 24. Protect against privilege escalation
+
+Rules:
+
+- only authorized users can manage members and roles
+- users must not be able to promote themselves
+- users must not act outside their workspace permissions
+- sensitive role changes must be protected by policy/service rules
+
+---
+
+# Performance Rules
+
+## 25. Avoid N+1 queries
+
+Always think about query efficiency.
+
+Rules:
+
+- eager load relationships when needed
+- paginate large lists
+- do not fetch full datasets unnecessarily
+- select only what is required for large views when practical
+
+Especially review:
+
+- dashboard queries
+- notifications
+- project lists
+- board/task loading
+- activity timelines
+
+---
+
+## 26. Use Redis for async and cache use cases
+
+Redis is used for:
+
+- queues
+- caching where helpful
+- scalable background processing
+
+Use jobs for:
+
+- email sending
+- heavy notifications
+- attachment post-processing if added
+- expensive async work
+
+Do not queue tiny trivial work without reason.
+
+---
+
+# Code Quality Rules
+
+## 27. Readability over cleverness
+
+Write code that another developer can understand quickly.
+
+Rules:
+
+- use clear names
+- avoid deep nesting
+- remove dead code
+- no commented-out code blocks
+- no debug dumps or temporary logs in committed code
+- no vague helper classes
+
+Avoid names like:
+
+- HelperService
+- CommonUtil
+- MiscManager
+
+Prefer names like:
+
+- CreateProjectAction
+- AssignTaskMembersAction
+- MoveTaskToColumnAction
+- WorkspaceMemberPolicy
+
+---
+
+## 28. Keep files focused
+
+Rules:
+
+- controllers should stay small
+- services should do one thing
+- policies should be focused
+- Vue pages should compose smaller pieces
+- extract components and composables as complexity grows
+
+---
+
+## 29. Follow existing patterns
+
+Before generating code:
+
+- inspect nearby files
+- match naming conventions
+- match response style
+- match test style
+- match module structure
+
+Prefer consistency with the codebase over personal invention.
+
+---
+
+# Git and Workflow Rules
+
+## 30. Commit quality matters
+
+Recommended commit prefixes:
+
+- feat:
+- fix:
+- refactor:
+- test:
+- docs:
+- ui:
+
+Examples:
+
+- feat: add workspace invitation flow
+- fix: scope tasks by workspace membership
+- refactor: extract task move action
+- test: add project policy coverage
+- ui: improve task details drawer layout
+
+Keep commits:
+
+- small
+- focused
+- logical
+
+---
+
+# Documentation Rules
+
+## 31. Keep docs aligned with implementation
+
+When making major changes:
+
+- update setup docs if needed
+- update environment variable docs if needed
+- update feature/module documentation if behavior changes significantly
+
+---
+
+# Definition of Done
+
+A feature is only complete when:
+
+- validation exists
+- authorization exists
+- workspace scoping is correct
+- UI states are complete
+- errors are handled
+- code follows project structure
+- tests are added where important
+- no debug code remains
+
+---
+
+# What to Avoid
+
+Do not:
+
+- place business logic in controllers
+- skip authorization
+- skip tenant scoping
+- duplicate the same logic across files
+- create giant utility/helper classes
+- build fragile tightly-coupled components
+- ignore testing for critical behavior
+- add inconsistent UI patterns
+- commit incomplete critical logic as done
+
+---
+
+# Expected Product Quality
+
+This project should feel like:
+
+- a real SaaS product
+- a clean and scalable codebase
+- a professional portfolio project
+
+It must not feel like:
+
+- a tutorial clone
+- a basic CRUD demo
+- an unfinished prototype
+- a messy experimental codebase

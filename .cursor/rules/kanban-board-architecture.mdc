@@ -1,0 +1,347 @@
+---
+description: Architecture rules for implementing the Kanban board system (boards, columns, tasks, ordering, and drag-drop behavior)
+globs:
+  - app/**
+  - resources/**
+  - tests/**
+alwaysApply: false
+---
+
+# Kanban Board Architecture
+
+This project includes a **Kanban-style task management system** similar to Trello, ClickUp, or Linear.
+
+The Kanban board structure consists of:
+
+Workspace → Project → Board → Columns → Tasks
+
+This file defines how the board system must be implemented.
+
+---
+
+# 1. Core Entities
+
+The Kanban system includes these entities.
+
+## Boards
+
+A board belongs to a project.
+
+Example:
+
+Project → "Website Redesign"
+
+Board → "Development Board"
+
+Each board contains columns.
+
+---
+
+## Columns
+
+Columns represent stages in the workflow.
+
+Examples:
+
+Backlog  
+Todo  
+In Progress  
+Review  
+Done  
+
+Each column contains tasks.
+
+Columns must support ordering.
+
+---
+
+## Tasks
+
+Tasks represent individual work items.
+
+Tasks belong to:
+
+- a board
+- a column
+- a project
+- a workspace
+
+Tasks must support:
+
+- movement between columns
+- reordering within columns
+
+---
+
+# 2. Ordering System
+
+Columns and tasks must support ordering.
+
+Use a **position field**.
+
+Examples:
+
+```
+columns.position
+tasks.position
+```
+
+Rules:
+
+- lower numbers appear first
+- positions must remain stable after inserts/moves
+- avoid recalculating the entire board unnecessarily
+
+---
+
+# 3. Column Reordering
+
+Columns must be reorderable.
+
+When a column moves:
+
+- update positions of affected columns
+- perform operation inside a database transaction
+
+Example service:
+
+```
+ReorderBoardColumnsAction
+```
+
+Rules:
+
+- ensure only columns in the same board are reordered
+- maintain consistent ordering
+- prevent duplicate positions
+
+---
+
+# 4. Task Movement
+
+Tasks can move:
+
+- within the same column
+- between different columns
+
+Example actions:
+
+```
+MoveTaskWithinColumnAction
+MoveTaskToColumnAction
+```
+
+Rules:
+
+- update the column_id
+- update the position
+- update affected tasks in both columns
+- record activity logs
+
+---
+
+# 5. Drag and Drop Behavior
+
+Frontend will support drag and drop.
+
+When dragging tasks:
+
+The frontend should send:
+
+- task_id
+- destination_column_id
+- new_position
+
+The backend must:
+
+- validate the move
+- verify workspace/project ownership
+- update positions safely
+- run the operation in a transaction
+
+Never trust frontend ordering blindly.
+
+---
+
+# 6. Default Columns
+
+When a new project is created, the system should automatically create default columns.
+
+Default example:
+
+1. Backlog  
+2. Todo  
+3. In Progress  
+4. Review  
+5. Done  
+
+This should be handled by:
+
+```
+CreateDefaultBoardColumnsAction
+```
+
+---
+
+# 7. Column Deletion
+
+Columns should not be deleted if tasks still exist inside them.
+
+Possible approaches:
+
+Option 1 (recommended):
+
+Move tasks to another column before deletion.
+
+Option 2:
+
+Block deletion if tasks exist.
+
+---
+
+# 8. Task Creation
+
+When a new task is created:
+
+- it must belong to a column
+- its position should be placed at the end of the column
+
+Example service:
+
+```
+CreateTaskAction
+```
+
+Rules:
+
+- calculate next position automatically
+- avoid collisions
+
+---
+
+# 9. Activity Logging
+
+Important Kanban events must be logged.
+
+Examples:
+
+- task created
+- task moved between columns
+- task reordered
+- task updated
+- task assigned
+
+Logs should include:
+
+- actor
+- task
+- previous column (if moved)
+- new column
+- timestamp
+
+---
+
+# 10. Performance Considerations
+
+Kanban boards can become large.
+
+Rules:
+
+- eager load relationships
+- paginate tasks if necessary
+- avoid loading unnecessary columns
+- index board_id and column_id
+- avoid N+1 queries
+
+Recommended indexes:
+
+```
+tasks.column_id
+tasks.position
+columns.board_id
+columns.position
+```
+
+---
+
+# 11. API Design
+
+Recommended endpoints:
+
+```
+GET /projects/{project}/board
+
+POST /tasks
+PATCH /tasks/{task}
+
+POST /tasks/{task}/move
+
+POST /boards/{board}/columns
+PATCH /columns/{column}
+DELETE /columns/{column}
+
+POST /columns/reorder
+```
+
+Endpoints must:
+
+- enforce workspace isolation
+- validate positions
+- authorize users
+
+---
+
+# 12. Frontend Board Structure
+
+Recommended Vue structure:
+
+```
+BoardView
+├── BoardColumn
+│     ├── TaskCard
+│
+├── TaskDetailsDrawer
+└── CreateTaskDialog
+```
+
+Components must stay small and reusable.
+
+---
+
+# 13. UI Behavior
+
+Kanban UI should support:
+
+- drag tasks between columns
+- reorder tasks
+- quick task creation
+- open task detail panel
+- show task priority and labels
+- show assigned members
+
+---
+
+# 14. Testing Requirements
+
+Tests must verify:
+
+- tasks cannot move across workspaces
+- ordering remains correct
+- column reordering works
+- task movement updates positions correctly
+- unauthorized users cannot reorder boards
+- transactions prevent partial updates
+
+---
+
+# Final Goal
+
+The Kanban system must be:
+
+- stable
+- predictable
+- performant
+- safe in multi-user environments
+- easy to extend
+
+Avoid fragile ordering logic or shortcuts that break when the board grows.

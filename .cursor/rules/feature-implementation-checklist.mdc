@@ -1,0 +1,355 @@
+---
+description: Checklist and standards for implementing any new feature in the SaaS Project Management Platform
+globs:
+  - app/**
+  - resources/**
+  - routes/**
+  - tests/**
+alwaysApply: false
+---
+
+# Feature Implementation Checklist
+
+Whenever implementing a new feature, follow this checklist to ensure the feature is production-quality, secure, and consistent with the project architecture.
+
+---
+
+# 1. Understand the Feature Domain
+
+Before writing code:
+
+- Identify the main entities involved.
+- Identify which workspace the feature belongs to.
+- Identify the user roles that can access the feature.
+- Determine whether the feature affects tasks, projects, members, or workspace-level resources.
+- Determine whether activity logs or notifications should be created.
+
+Never implement a feature blindly without understanding its domain context.
+
+---
+
+# 2. Database Layer
+
+If the feature requires database changes:
+
+Checklist:
+
+- Create a migration.
+- Use clear table and column names.
+- Add foreign keys where appropriate.
+- Add indexes for frequently queried fields.
+- Ensure workspace scoping where applicable.
+- Avoid unnecessary JSON fields.
+
+Examples of commonly required indexes:
+
+- workspace_id
+- project_id
+- board_id
+- task_id
+- user_id
+- status
+- due_date
+- position/order fields
+
+---
+
+# 3. Model Layer
+
+When adding or modifying models:
+
+Checklist:
+
+- Define proper Eloquent relationships.
+- Add fillable or guarded properties correctly.
+- Avoid putting heavy business logic in models.
+- Use model scopes for common query patterns if appropriate.
+
+Example relationships:
+
+- workspace → projects
+- project → boards
+- board → columns
+- column → tasks
+- task → comments
+- task → attachments
+- workspace → members
+
+---
+
+# 4. Validation Layer
+
+Every write endpoint must include validation.
+
+Checklist:
+
+- Create a Form Request.
+- Validate all inputs strictly.
+- Validate nested arrays where necessary.
+- Validate enums/status values.
+- Validate file uploads by size and mime type.
+
+Never rely on frontend validation alone.
+
+---
+
+# 5. Authorization Layer
+
+Every protected action must be authorized.
+
+Checklist:
+
+- Use Laravel Policies.
+- Ensure the user belongs to the workspace.
+- Ensure the user has permission for the action.
+- Prevent cross-workspace access.
+
+Typical policy actions:
+
+- view
+- create
+- update
+- delete
+- assign
+- reorder
+- comment
+- upload
+- manage members
+
+---
+
+# 6. Service / Action Layer
+
+Complex workflows must be implemented in services/actions.
+
+Checklist:
+
+- Create a dedicated service/action class.
+- One service should perform one clear task.
+- Use dependency injection where appropriate.
+- Avoid placing complex logic inside controllers.
+
+Examples:
+
+- CreateProjectAction
+- MoveTaskToColumnAction
+- AssignTaskMembersAction
+- InviteWorkspaceMemberAction
+- AddTaskCommentAction
+
+---
+
+# 7. Transactions
+
+If a feature performs multiple writes:
+
+Checklist:
+
+- Wrap operations in a database transaction.
+- Ensure the system does not leave partial data.
+- Roll back safely on failure.
+
+Examples:
+
+- project creation with default board columns
+- task move with activity logging
+- member invite with notification creation
+
+---
+
+# 8. Activity Logs
+
+Determine whether the feature should generate activity logs.
+
+Examples:
+
+- task created
+- task moved
+- member assigned
+- comment added
+- project created
+- attachment uploaded
+
+Checklist:
+
+- record actor
+- record action type
+- store related entity ID
+- ensure logs are human-readable
+
+Avoid logging meaningless noise.
+
+---
+
+# 9. Notifications
+
+Determine whether the feature should trigger notifications.
+
+Examples:
+
+- task assignment
+- user mention in comment
+- member invitation
+- important status changes
+
+Checklist:
+
+- avoid spammy behavior
+- structure notification payloads clearly
+- allow notifications to be marked as read
+
+---
+
+# 10. API Endpoint
+
+When adding API endpoints:
+
+Checklist:
+
+- Use clear RESTful routes.
+- Return consistent JSON responses.
+- Use correct HTTP status codes.
+- Support pagination for large lists.
+- Avoid returning unnecessary fields.
+
+Typical responses:
+
+200 → success  
+201 → created  
+204 → deleted  
+403 → forbidden  
+404 → not found  
+422 → validation error  
+
+---
+
+# 11. Frontend UI
+
+When building frontend UI for the feature:
+
+Checklist:
+
+- Use shadcn-vue components.
+- Follow existing layout patterns.
+- Keep components small and focused.
+- Extract reusable UI components.
+
+Examples:
+
+- dialogs
+- cards
+- tables
+- dropdown menus
+- side panels
+- badges
+- avatars
+
+---
+
+# 12. UI States
+
+Every UI feature must include proper states.
+
+Required states:
+
+- loading
+- empty
+- success
+- validation error
+- failure/error
+- destructive confirmation if needed
+
+Never leave blank screens or silent failures.
+
+---
+
+# 13. State Management
+
+Determine whether the feature requires global state.
+
+Checklist:
+
+- use Pinia only if state is shared
+- prefer local state when possible
+- avoid unnecessary global stores
+
+Common stores:
+
+- auth
+- workspace context
+- notifications
+- shared filters
+
+---
+
+# 14. Testing
+
+Important logic must be tested.
+
+Checklist:
+
+- add Feature tests for endpoints
+- add Unit tests for services/actions
+- test validation failures
+- test authorization rules
+- test workspace isolation
+- test edge cases
+
+Never add features that break tenant isolation.
+
+---
+
+# 15. Performance Review
+
+Before finishing the feature:
+
+Checklist:
+
+- check for N+1 queries
+- ensure large lists are paginated
+- eager load required relationships
+- avoid unnecessary heavy queries
+
+---
+
+# 16. Code Quality Review
+
+Before completing the feature:
+
+Checklist:
+
+- remove debug code
+- remove commented-out code
+- ensure naming is clear
+- split large classes/components if needed
+- ensure code follows project conventions
+
+---
+
+# 17. Final UX Review
+
+Ensure the feature feels complete.
+
+Checklist:
+
+- clear feedback after actions
+- confirmation for destructive operations
+- intuitive user flow
+- minimal unnecessary clicks
+- consistent UI patterns
+
+---
+
+# Definition of Feature Completion
+
+A feature is considered complete only when:
+
+- database structure is correct
+- validation exists
+- authorization exists
+- tenant isolation is enforced
+- UI states are implemented
+- activity logs are added if needed
+- notifications are added if needed
+- tests are written
+- code follows project conventions

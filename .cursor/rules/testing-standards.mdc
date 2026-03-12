@@ -1,0 +1,390 @@
+---
+description: Testing standards for the SaaS Project Management Platform
+globs:
+  - tests/**
+  - app/**
+alwaysApply: false
+---
+
+# Testing Standards
+
+This project requires meaningful automated tests for important business logic.
+
+Tests should verify:
+
+- correctness
+- authorization
+- validation
+- workspace isolation
+- workflow integrity
+
+Testing must reflect real-world usage scenarios.
+
+---
+
+# 1. Testing Framework
+
+Backend testing uses:
+
+- PHPUnit
+- Laravel testing utilities
+- Laravel model factories
+- RefreshDatabase trait
+
+Rules:
+
+- tests must run reliably
+- tests must not depend on execution order
+- each test should set up its own data
+
+---
+
+# 2. Types of Tests
+
+The project should use two main types of tests.
+
+## Feature Tests
+
+Feature tests verify application behavior through HTTP endpoints.
+
+Feature tests should cover:
+
+- authentication
+- authorization
+- CRUD operations
+- validation errors
+- workspace isolation
+- task operations
+- board operations
+- comments
+- notifications
+- activity logs
+
+Feature tests simulate real requests.
+
+Example structure:
+
+```
+tests/Feature/Project/CreateProjectTest.php
+tests/Feature/Task/MoveTaskTest.php
+tests/Feature/Workspace/InviteMemberTest.php
+```
+
+---
+
+## Unit Tests
+
+Unit tests verify isolated business logic.
+
+Unit tests should cover:
+
+- service classes
+- action classes
+- domain logic
+- ordering algorithms
+- validation helpers
+
+Example structure:
+
+```
+tests/Unit/Actions/Task/MoveTaskToColumnActionTest.php
+tests/Unit/Actions/Workspace/CreateWorkspaceActionTest.php
+```
+
+---
+
+# 3. Workspace Isolation Tests
+
+This is one of the most important parts of the system.
+
+The application is multi-tenant by workspace.
+
+Tests must verify:
+
+- users cannot access other workspaces
+- users cannot modify resources outside their workspace
+- unauthorized roles are blocked
+
+Example scenarios:
+
+User A in Workspace A  
+User B in Workspace B  
+
+User A should not:
+
+- view Workspace B projects
+- move Workspace B tasks
+- comment on Workspace B tasks
+- access Workspace B board
+
+---
+
+# 4. Authorization Tests
+
+Policies must be tested.
+
+Verify:
+
+- owners have full access
+- admins have correct management permissions
+- members have limited permissions
+- non-members cannot access workspace resources
+
+Test both:
+
+- allowed scenarios
+- forbidden scenarios
+
+Example:
+
+```php
+$this->actingAs($user)
+    ->postJson('/api/projects', [...])
+    ->assertForbidden();
+```
+
+---
+
+# 5. Validation Tests
+
+Every write endpoint must have validation tests.
+
+Examples:
+
+- missing required fields
+- invalid enums
+- invalid file uploads
+- incorrect formats
+- invalid relationships
+
+Example:
+
+```php
+$response = $this->postJson('/api/projects', []);
+
+$response->assertStatus(422);
+```
+
+---
+
+# 6. Task Movement Tests
+
+The Kanban system is complex and must be tested carefully.
+
+Tests must verify:
+
+- tasks move between columns correctly
+- task ordering updates correctly
+- positions remain consistent
+- transactions prevent partial updates
+
+Example scenarios:
+
+- move task within column
+- move task to different column
+- reorder tasks
+- move task to empty column
+
+---
+
+# 7. Activity Log Tests
+
+Activity logging should be verified.
+
+Tests should check:
+
+- activity records are created
+- correct actor is stored
+- correct entity is stored
+- correct action type is stored
+
+Example:
+
+```php
+$this->assertDatabaseHas('activity_logs', [
+    'action' => 'task_moved'
+]);
+```
+
+---
+
+# 8. Notification Tests
+
+Important actions should generate notifications.
+
+Test scenarios:
+
+- task assignment
+- user mentions
+- workspace invitations
+
+Verify:
+
+- notification record created
+- correct recipient
+- correct notification type
+
+---
+
+# 9. Database Assertions
+
+Prefer database assertions to verify outcomes.
+
+Examples:
+
+```php
+assertDatabaseHas
+assertDatabaseMissing
+assertDatabaseCount
+```
+
+These confirm that the system state changed correctly.
+
+---
+
+# 10. Factories
+
+Factories must be used for creating test data.
+
+Examples:
+
+- UserFactory
+- WorkspaceFactory
+- ProjectFactory
+- BoardFactory
+- TaskFactory
+
+Factories should support creating related models.
+
+Example:
+
+```php
+Workspace::factory()
+    ->hasProjects(2)
+    ->create();
+```
+
+Avoid writing manual data setup repeatedly.
+
+---
+
+# 11. Test Naming
+
+Test names should clearly describe behavior.
+
+Good examples:
+
+```
+test_user_can_create_project
+test_member_cannot_delete_project
+test_task_can_be_moved_between_columns
+test_user_cannot_access_other_workspace_projects
+```
+
+Bad examples:
+
+```
+test_project
+test_action
+test_case_1
+```
+
+Tests should read like documentation.
+
+---
+
+# 12. Test Structure
+
+Tests should follow the structure:
+
+Arrange  
+Act  
+Assert  
+
+Example:
+
+```php
+public function test_user_can_create_project()
+{
+    // Arrange
+    $user = User::factory()->create();
+
+    // Act
+    $response = $this->actingAs($user)
+        ->postJson('/api/projects', [...]);
+
+    // Assert
+    $response->assertStatus(201);
+}
+```
+
+---
+
+# 13. Edge Case Tests
+
+Important edge cases should be tested.
+
+Examples:
+
+- moving task to invalid column
+- deleting project with tasks
+- inviting existing member
+- uploading invalid file
+- exceeding limits if implemented later
+
+Edge cases often reveal hidden bugs.
+
+---
+
+# 14. Performance Awareness
+
+Tests should avoid unnecessary heavy setup.
+
+Rules:
+
+- avoid creating massive datasets
+- use minimal data needed
+- keep tests fast
+
+Slow tests discourage testing.
+
+---
+
+# 15. Regression Tests
+
+When fixing a bug:
+
+- add a test that reproduces the bug
+- ensure the test fails before the fix
+- ensure it passes after the fix
+
+This prevents the bug from returning.
+
+---
+
+# 16. Test Coverage Philosophy
+
+Coverage is important, but **meaningful coverage is more important than raw numbers**.
+
+Focus on testing:
+
+- critical business workflows
+- authorization
+- validation
+- tenant isolation
+- ordering logic
+
+Avoid writing tests that only check trivial getters or static responses.
+
+---
+
+# Final Goal
+
+The test suite should:
+
+- catch regressions
+- verify system behavior
+- ensure tenant safety
+- document system behavior
+
+A good test suite should make the system **safe to refactor and extend**.

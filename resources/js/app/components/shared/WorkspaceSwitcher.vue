@@ -1,0 +1,95 @@
+<template>
+  <div ref="rootRef" class="mb-4">
+    <button
+      type="button"
+      class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-100"
+      @click="open = !open"
+    >
+      <Building2 class="h-5 w-5 shrink-0" />
+      <span v-if="!uiStore.sidebarCollapsed" class="flex-1 truncate">
+        {{ workspaceStore.activeWorkspace?.name ?? 'Select workspace' }}
+      </span>
+      <ChevronDown v-if="!uiStore.sidebarCollapsed" class="h-4 w-4 shrink-0" />
+    </button>
+    <div v-if="open && !uiStore.sidebarCollapsed" class="mt-1 space-y-1 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+      <button
+        v-for="ws in workspaceStore.workspaces"
+        :key="ws.id"
+        type="button"
+        :class="[
+          'block w-full px-4 py-2 text-left text-sm hover:bg-gray-50',
+          workspaceStore.activeWorkspaceId === ws.id && 'bg-indigo-50 font-medium text-indigo-700',
+        ]"
+        @click="selectWorkspace(ws.id)"
+      >
+        {{ ws.name }}
+      </button>
+      <button
+        type="button"
+        class="block w-full px-4 py-2 text-left text-sm text-indigo-600 hover:bg-indigo-50"
+        @click="showCreate = true"
+      >
+        + Create workspace
+      </button>
+    </div>
+    <div v-if="showCreate" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30" @click.self="showCreate = false">
+      <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+        <h3 class="text-lg font-semibold">Create workspace</h3>
+        <form class="mt-4 space-y-4" @submit.prevent="createWorkspace">
+          <Input v-model="newName" label="Name" placeholder="My Workspace" required />
+          <div class="flex justify-end gap-2">
+            <Button type="button" variant="secondary" @click="showCreate = false">Cancel</Button>
+            <Button type="submit" :loading="creating">Create</Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue';
+import { Building2, ChevronDown } from 'lucide-vue-next';
+import { useWorkspaceStore } from '../../stores/workspaceStore';
+import { useUiStore } from '../../stores/uiStore';
+import Button from '../ui/Button.vue';
+import Input from '../ui/Input.vue';
+
+const workspaceStore = useWorkspaceStore();
+const uiStore = useUiStore();
+const open = ref(false);
+const rootRef = ref(null);
+
+function handleClickOutside(e) {
+  if (rootRef.value && !rootRef.value.contains(e.target)) open.value = false;
+}
+const showCreate = ref(false);
+const newName = ref('');
+const creating = ref(false);
+
+onMounted(() => {
+  if (workspaceStore.workspaces.length === 0) {
+    workspaceStore.fetchWorkspaces();
+  }
+  document.addEventListener('click', handleClickOutside);
+});
+onUnmounted(() => document.removeEventListener('click', handleClickOutside));
+
+function selectWorkspace(id) {
+  workspaceStore.setActive(id);
+  open.value = false;
+}
+
+async function createWorkspace() {
+  if (!newName.value.trim()) return;
+  creating.value = true;
+  try {
+    await workspaceStore.createWorkspace(newName.value.trim());
+    showCreate.value = false;
+    newName.value = '';
+    open.value = false;
+  } finally {
+    creating.value = false;
+  }
+}
+</script>

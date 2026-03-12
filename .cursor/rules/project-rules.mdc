@@ -1,0 +1,174 @@
+---
+description: Core project rules — SaaS Project Management Platform (Laravel 12, Vue 3, Pinia, shadcn-vue). Applies to backend, frontend, DB, testing, UI, security, performance, and workflow.
+alwaysApply: true
+---
+
+# Project Rules — SaaS Project Management Platform
+
+These rules define how this project must be built and maintained. They apply to backend, frontend, database, testing, UI, security, performance, and developer workflow.
+
+**Project stack:** Laravel 12, PHP 8.3, MySQL, Redis, Vue 3, Pinia, Vue Router, Tailwind CSS, shadcn-vue.
+
+---
+
+# 1. Core Project Principles
+
+## 1.1 Build for production quality
+
+- Avoid quick hacks; prefer clean architecture over shortcuts.
+- Keep code readable, maintainable, and scalable.
+- Every major feature should be modular and extensible.
+- Do not write throwaway code.
+
+## 1.2 Multi-tenant safety is mandatory
+
+- All workspace-owned data must always be scoped correctly.
+- Never return data from another workspace.
+- Every query involving projects, boards, tasks, members, notifications, or logs must respect workspace boundaries.
+- Backend authorization must enforce tenant isolation, not just frontend checks.
+
+## 1.3 Thin controllers, strong domain logic
+
+- Controllers must remain thin.
+- Validation → Form Requests. Business logic → services/actions. Authorization → policies.
+- Repeated logic must be extracted into reusable classes.
+- Models should not become bloated with unrelated logic.
+
+## 1.4 Consistency over cleverness
+
+- Follow existing naming conventions and the same structure across modules.
+- Do not introduce new architectural patterns unless clearly justified.
+- Prefer boring, predictable, maintainable code.
+
+---
+
+# 2. Backend Rules
+
+## 2.1 Structure
+
+Organize by module: Auth, Workspace, Members, Projects, Boards, Tasks, Comments, Attachments, Notifications, Activity Logs. Each module: Model, Controller, Form Request, Service/Action, Policy, Resource/DTO, Routes, Tests.
+
+## 2.2 Laravel conventions
+
+- Use Eloquent relationships, Form Requests, API Resources, Policies, Jobs, Events/Listeners.
+- Use database transactions for multi-step write operations.
+
+## 2.3 Validation
+
+- Never trust frontend validation alone; every write endpoint must validate input.
+- Use enums or constants for status, role, priority. Validate file types, sizes, upload limits.
+
+## 2.4 Authorization
+
+- Every protected action must be authorized on the backend.
+- Use policies for create, view, update, delete, archive, invite, assign, reorder, comment.
+- Authorization must respect workspace membership and user role.
+
+## 2.5 Service layer
+
+- Complex business logic in service/action classes; one clear job per service.
+- Services must be reusable, testable, and receive explicit arguments (not raw request unless justified).
+
+## 2.6 Database write safety
+
+- Use transactions for multi-table writes; fail safely; no partial data on workflow failure.
+- Reordering (boards/tasks) must be atomic. Use foreign keys; soft deletes only when they add product value.
+
+## 2.7 API design
+
+- Resource-oriented, consistent JSON, proper HTTP methods, pagination for lists.
+- Status codes: 200 success, 201 created, 204 no-content delete, 422 validation, 403 forbidden, 404 not found.
+
+---
+
+# 3. Database Rules
+
+- Table names plural; explicit indexed foreign keys; consistent status-like fields.
+- Index: foreign keys, workspace_id, due_date, status, priority, ordering fields where queried.
+- Migrations: one clear change each; never modify old migrations; use follow-up migrations; define cascade intentionally.
+
+---
+
+# 4. Frontend Rules
+
+- Vue 3 Composition API; small focused components; composables for repeated logic; Pinia only for shared state.
+- Use shadcn-vue and Tailwind consistently; one responsibility per component; typed props/emits.
+- Forms: loading, success, error states; disable submit during submission; confirmation for destructive actions.
+- Fast and responsive; skeletons/loaders; meaningful empty states; toast/inline feedback.
+
+---
+
+# 5. State Management (Pinia)
+
+- Use Pinia only for shared/cross-page state. Stores: auth, workspace context, notifications, shared filters, UI preferences. Keep stores focused by domain.
+
+---
+
+# 6. Testing Rules
+
+- Major business logic must be tested; new features are not complete without tests; bug fixes should include regression tests.
+- Backend: Feature tests for endpoints; Unit tests for isolated logic; test success and failure paths; test cross-workspace denial and role restrictions.
+- Frontend (if added): page rendering, form validation, loading/error states, board/task interactions; test behavior, not implementation.
+- Use factories; realistic scenarios; independent, reliable tests.
+
+---
+
+# 7. Code Quality
+
+- Readable first; avoid deep nesting; explicit names; no dead or commented-out code; no debug dumps in commits.
+- Good names: CreateWorkspaceAction, AssignTaskMembersAction, ProjectMemberPolicy. Bad: HelperService, DoTaskThing.
+- Avoid massive classes/components; split when responsibilities grow.
+
+---
+
+# 8. Security
+
+- Validate all input; authorize all protected actions; sanitize/validate uploads; prevent mass-assignment; never trust client-provided workspace/role blindly.
+- File uploads: validate mime/size; safe storage; safe stored filenames.
+- Destructive actions: require confirmation; log in activity; restrict high-risk to workspace owners/admins.
+
+---
+
+# 9. Performance
+
+- Avoid N+1; eager load; paginate large lists; use indexes intentionally.
+- Frontend: lazy load where helpful; avoid unnecessary rerenders; keep board interactions smooth.
+- Redis queues for: email notifications, heavy activity processing, expensive async work; jobs retry-safe and idempotent where practical.
+
+---
+
+# 10. Activity Log & Notifications
+
+- Log important user actions with human-readable messages; include actor, workspace, entity, action type.
+- Notifications: relevant (assignments, mentions, important updates); centralized creation; read/unread; structured for frontend.
+
+---
+
+# 11. Git & Docs
+
+- Small focused commits; conventional style (feat:, fix:, refactor:, test:, ui:). Feature branches; merge when stable.
+- Document architecture, README, setup, env vars, major modules; comments explain why, not what.
+
+---
+
+# 12. Definition of Done
+
+Feature complete when: requirements implemented, backend validation and authorization exist, tenant scoping correct, UI states and error handling complete, tests added, no debug code, conventions followed.
+
+---
+
+# 13. Avoid
+
+- Bypassing authorization; business logic in controllers; giant random “helper” classes; duplicated code; hardcoded workspace assumptions; skipping tests for critical flows; inconsistent UI; TODO-based unfinished critical logic; premature optimization; happy-path-only features.
+
+---
+
+# 14. Preferred Build Order
+
+1. Documentation → 2. Database schema → 3. Backend foundation → 4. Frontend foundation → 5. Auth → 6. Workspace & members → 7. Projects → 8. Boards & columns → 9. Tasks → 10. Comments & attachments → 11. Notifications → 12. Activity logs → 13. Dashboard → 14. Polish → 15. Tests & refactoring.
+
+---
+
+# 15. Standard
+
+This project must feel like a real product, clean codebase, scalable system, strong portfolio piece — not a tutorial clone, rushed CRUD demo, or unfinished prototype.

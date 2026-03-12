@@ -1,0 +1,681 @@
+---
+description: Project folder structure and file organization rules for the SaaS Project Management Platform
+globs:
+  - app/**
+  - bootstrap/**
+  - config/**
+  - database/**
+  - resources/**
+  - routes/**
+  - tests/**
+alwaysApply: true
+---
+
+# Project Structure Rules
+
+This project must follow a clean, scalable, and predictable structure.
+All generated code must fit the existing architecture and should not introduce messy or inconsistent folders.
+
+Tech stack:
+
+- Laravel 12
+- PHP 8.3
+- MySQL
+- Redis
+- Vue 3
+- Pinia
+- Vue Router
+- Tailwind CSS
+- shadcn-vue
+
+---
+
+# 1. General Principles
+
+Rules:
+
+- organize code by domain and responsibility
+- keep folder naming predictable
+- do not create random utility folders without strong reason
+- do not scatter related logic across unrelated directories
+- prefer explicit structure over clever structure
+- keep similar files in similar places
+
+This codebase should feel easy to navigate.
+
+---
+
+# 2. Backend Structure
+
+Backend should remain domain-oriented and Laravel-friendly.
+
+Recommended structure:
+
+```text
+app/
+  Actions/
+  Http/
+    Controllers/
+    Requests/
+    Resources/
+  Models/
+  Policies/
+  Services/
+  Jobs/
+  Events/
+  Listeners/
+  Notifications/
+  Support/
+```
+
+Rules:
+
+* use `Actions/` for domain-specific business actions
+* use `Services/` only for reusable service-style classes that do not fit better as actions
+* use `Support/` for small focused shared utilities only
+* do not create vague folders like `Helpers/`, `Utils/`, or `Common/` unless absolutely necessary
+* avoid placing business logic directly in models or controllers
+
+---
+
+# 3. Preferred Domain Grouping Pattern
+
+When the project grows, action/service classes should be grouped by domain.
+
+Recommended examples:
+
+```text
+app/Actions/Workspace/
+app/Actions/Project/
+app/Actions/Board/
+app/Actions/Task/
+app/Actions/Comment/
+app/Actions/Notification/
+```
+
+Examples:
+
+```text
+app/Actions/Workspace/CreateWorkspaceAction.php
+app/Actions/Workspace/InviteWorkspaceMemberAction.php
+app/Actions/Project/CreateProjectAction.php
+app/Actions/Board/ReorderBoardColumnsAction.php
+app/Actions/Task/MoveTaskToColumnAction.php
+app/Actions/Task/AssignTaskMembersAction.php
+app/Actions/Comment/AddTaskCommentAction.php
+```
+
+Rules:
+
+* group by feature/domain first
+* class names must clearly describe the action
+* one file should do one job
+
+---
+
+# 4. Controller Structure
+
+Controllers should be organized by domain.
+
+Recommended structure:
+
+```text
+app/Http/Controllers/Api/Auth/
+app/Http/Controllers/Api/Workspace/
+app/Http/Controllers/Api/Project/
+app/Http/Controllers/Api/Board/
+app/Http/Controllers/Api/Task/
+app/Http/Controllers/Api/Comment/
+app/Http/Controllers/Api/Notification/
+```
+
+Rules:
+
+* keep controllers small
+* controllers should mainly coordinate request → authorize → action/service → response
+* do not create giant controllers with many unrelated methods
+* split controllers when a module grows too large
+
+Examples:
+
+* `WorkspaceController`
+* `WorkspaceMemberController`
+* `ProjectController`
+* `BoardColumnController`
+* `TaskController`
+* `TaskMoveController`
+* `TaskCommentController`
+
+---
+
+# 5. Request Structure
+
+Form Requests should be organized by domain.
+
+Recommended structure:
+
+```text
+app/Http/Requests/Auth/
+app/Http/Requests/Workspace/
+app/Http/Requests/Project/
+app/Http/Requests/Board/
+app/Http/Requests/Task/
+app/Http/Requests/Comment/
+```
+
+Examples:
+
+* `StoreWorkspaceRequest`
+* `InviteWorkspaceMemberRequest`
+* `StoreProjectRequest`
+* `ReorderBoardColumnsRequest`
+* `MoveTaskRequest`
+* `StoreTaskCommentRequest`
+
+Rules:
+
+* one request class per use case when validation differs meaningfully
+* do not overload a single request with unrelated validation rules
+* keep authorize logic here only when it is simple and appropriate; otherwise rely on policies
+
+---
+
+# 6. Resource Structure
+
+API Resources should be grouped by domain.
+
+Recommended structure:
+
+```text
+app/Http/Resources/Workspace/
+app/Http/Resources/Project/
+app/Http/Resources/Board/
+app/Http/Resources/Task/
+app/Http/Resources/Comment/
+app/Http/Resources/Notification/
+```
+
+Examples:
+
+* `WorkspaceResource`
+* `ProjectListResource`
+* `ProjectDetailResource`
+* `BoardResource`
+* `TaskResource`
+* `CommentResource`
+
+Rules:
+
+* use resources where response shape matters
+* avoid huge inline transformation arrays in controllers
+* create separate list/detail resources if necessary
+
+---
+
+# 7. Policy Structure
+
+Policies remain in:
+
+```text
+app/Policies/
+```
+
+Examples:
+
+* `WorkspacePolicy`
+* `ProjectPolicy`
+* `BoardPolicy`
+* `TaskPolicy`
+* `CommentPolicy`
+* `AttachmentPolicy`
+
+Rules:
+
+* one policy per main model/resource
+* keep methods focused on permission decisions
+* do not place business workflows in policies
+
+---
+
+# 8. Model Structure
+
+Models remain in:
+
+```text
+app/Models/
+```
+
+Examples:
+
+* `User`
+* `Workspace`
+* `WorkspaceMember`
+* `Project`
+* `Board`
+* `BoardColumn`
+* `Task`
+* `TaskAssignment`
+* `TaskComment`
+* `Attachment`
+* `Notification`
+* `ActivityLog`
+
+Rules:
+
+* keep models slim
+* relationships, casts, scopes, and small model-specific helpers are fine
+* do not place large workflows in models
+* do not make models act like service classes
+
+---
+
+# 9. Job / Event / Listener Structure
+
+Use clear organization for async and event-driven logic.
+
+Recommended structure:
+
+```text
+app/Jobs/
+  Notification/
+  Attachment/
+  Task/
+
+app/Events/
+  Task/
+  Workspace/
+  Project/
+
+app/Listeners/
+  Task/
+  Workspace/
+  Project/
+```
+
+Examples:
+
+* `SendTaskAssignedNotificationJob`
+* `TaskMoved`
+* `LogTaskMovedActivity`
+
+Rules:
+
+* use events/listeners where side effects are helpful
+* do not create event-driven complexity for trivial flows
+* keep names descriptive
+
+---
+
+# 10. Notification Structure
+
+Notifications remain in:
+
+```text
+app/Notifications/
+```
+
+Examples:
+
+* `TaskAssignedNotification`
+* `TaskMentionedNotification`
+* `WorkspaceInvitationNotification`
+
+Rules:
+
+* notification classes should map to real user-facing events
+* avoid vague names
+* keep payloads structured and reusable
+
+---
+
+# 11. Support Structure
+
+`Support/` is allowed only for small reusable helpers that truly do not belong to a domain.
+
+Examples:
+
+```text
+app/Support/Enums/
+app/Support/Filters/
+app/Support/Pagination/
+app/Support/Uploads/
+```
+
+Rules:
+
+* do not dump unrelated logic here
+* prefer domain placement first
+* `Support/` must not become a trash folder
+
+Avoid folders like:
+
+* `Helpers`
+* `Utils`
+* `Common`
+* `Misc`
+
+unless there is a very strong reason and the contents are still carefully scoped.
+
+---
+
+# 12. Route Structure
+
+Routes should be split clearly.
+
+Recommended structure:
+
+```text
+routes/api.php
+routes/api/auth.php
+routes/api/workspaces.php
+routes/api/projects.php
+routes/api/boards.php
+routes/api/tasks.php
+routes/api/comments.php
+routes/api/notifications.php
+```
+
+If route splitting is used, `routes/api.php` should load the split files.
+
+Rules:
+
+* group routes by domain
+* use consistent route naming
+* avoid one huge route file for the whole system when it becomes large
+* keep RESTful patterns predictable
+
+---
+
+# 13. Database Structure
+
+Recommended structure:
+
+```text
+database/
+  factories/
+  migrations/
+  seeders/
+```
+
+Factory naming examples:
+
+* `WorkspaceFactory`
+* `ProjectFactory`
+* `BoardFactory`
+* `TaskFactory`
+
+Seeder naming examples:
+
+* `DemoWorkspaceSeeder`
+* `ProjectManagementDemoSeeder`
+
+Rules:
+
+* factories should create realistic data
+* seeders should be optional and clearly scoped
+* avoid putting demo-only logic into production code paths
+
+---
+
+# 14. Frontend Structure
+
+Frontend should be organized by app/domain, not as one giant flat folder.
+
+Recommended structure:
+
+```text
+resources/
+  js/
+    app/
+      router/
+      stores/
+      composables/
+      lib/
+      types/
+      layouts/
+      pages/
+      components/
+        ui/
+        shared/
+        dashboard/
+        workspace/
+        projects/
+        boards/
+        tasks/
+        comments/
+        notifications/
+```
+
+Rules:
+
+* `components/ui/` is for base reusable UI wrappers/components
+* `components/shared/` is for app-wide reusable components
+* domain-specific components belong inside their domain folder
+* pages belong in `pages/`
+* layouts belong in `layouts/`
+* composables belong in `composables/`
+* shared types belong in `types/`
+* small framework/config helpers belong in `lib/`
+
+---
+
+# 15. Frontend Page Structure
+
+Recommended examples:
+
+```text
+resources/js/app/pages/dashboard/
+resources/js/app/pages/workspaces/
+resources/js/app/pages/projects/
+resources/js/app/pages/boards/
+resources/js/app/pages/tasks/
+resources/js/app/pages/settings/
+```
+
+Examples:
+
+* `DashboardPage.vue`
+* `ProjectsIndexPage.vue`
+* `ProjectBoardPage.vue`
+* `TaskDetailsPage.vue`
+* `WorkspaceMembersPage.vue`
+
+Rules:
+
+* page files should compose smaller components
+* page files should not contain too much repeated markup or logic
+* split dialogs, cards, filters, tables, side panels, and forms into components
+
+---
+
+# 16. Frontend Component Structure
+
+Recommended examples:
+
+```text
+resources/js/app/components/shared/
+  AppSidebar.vue
+  PageHeader.vue
+  EmptyState.vue
+  ConfirmDialog.vue
+
+resources/js/app/components/projects/
+  ProjectCard.vue
+  ProjectList.vue
+  CreateProjectDialog.vue
+
+resources/js/app/components/boards/
+  BoardView.vue
+  BoardColumn.vue
+  ColumnHeader.vue
+
+resources/js/app/components/tasks/
+  TaskCard.vue
+  TaskDetailsDrawer.vue
+  TaskPriorityBadge.vue
+  TaskAssigneeAvatarStack.vue
+```
+
+Rules:
+
+* keep components small
+* name components by responsibility
+* do not create giant all-in-one feature files
+* reusable pieces should be extracted when duplicated
+
+---
+
+# 17. Store Structure
+
+Pinia stores should be in:
+
+```text
+resources/js/app/stores/
+```
+
+Examples:
+
+* `auth.ts`
+* `workspace.ts`
+* `notifications.ts`
+* `ui.ts`
+
+Rules:
+
+* stores should be focused by domain or concern
+* do not create one giant global store
+* prefer local state unless sharing is actually needed
+
+---
+
+# 18. Composable Structure
+
+Composables should be in:
+
+```text
+resources/js/app/composables/
+```
+
+Examples:
+
+* `useWorkspace.ts`
+* `useBoardDragDrop.ts`
+* `useTaskFilters.ts`
+* `usePagination.ts`
+
+Rules:
+
+* composables should encapsulate reusable logic
+* avoid composables that do too many unrelated things
+* name composables clearly with `use...`
+
+---
+
+# 19. Test Structure
+
+Tests should mirror backend domains.
+
+Recommended structure:
+
+```text
+tests/Feature/Auth/
+tests/Feature/Workspace/
+tests/Feature/Project/
+tests/Feature/Board/
+tests/Feature/Task/
+tests/Feature/Comment/
+tests/Feature/Notification/
+
+tests/Unit/Actions/Workspace/
+tests/Unit/Actions/Project/
+tests/Unit/Actions/Board/
+tests/Unit/Actions/Task/
+tests/Unit/Services/
+```
+
+Examples:
+
+* `CreateWorkspaceTest.php`
+* `InviteWorkspaceMemberTest.php`
+* `ProjectPolicyTest.php`
+* `MoveTaskToColumnActionTest.php`
+
+Rules:
+
+* organize tests by domain
+* prefer clear readable names
+* test files should map closely to the feature/action being tested
+
+---
+
+# 20. Naming Rules
+
+Rules:
+
+* names must be explicit
+* do not abbreviate important concepts
+* avoid vague names like `Manager`, `Helper`, `ServiceHelper`, `CommonTrait`
+* prefer names that explain responsibility exactly
+
+Good examples:
+
+* `CreateWorkspaceAction`
+* `MoveTaskToColumnAction`
+* `StoreProjectRequest`
+* `TaskResource`
+* `WorkspaceMemberController`
+
+Bad examples:
+
+* `GeneralHelper`
+* `TaskManager`
+* `CommonService`
+* `BaseUtil`
+
+---
+
+# 21. File Creation Rules
+
+When adding new code:
+
+* first check if a similar domain folder already exists
+* place the new file into the matching domain folder
+* follow existing naming patterns
+* do not create a new top-level folder without strong reason
+* do not create duplicate patterns for the same responsibility
+
+Consistency is more important than personal preference.
+
+---
+
+# 22. Refactoring Rules
+
+When code grows:
+
+* split large controllers into smaller controllers
+* split large page components into smaller components
+* move repeated workflows into actions/services
+* move repeated frontend logic into composables
+* move repeated response formatting into resources
+
+Do not let files grow uncontrolled.
+
+---
+
+# Final Goal
+
+The codebase should feel:
+
+* clean
+* scalable
+* easy to navigate
+* domain-driven
+* professional
+
+It should not feel:
+
+* flat
+* random
+* over-engineered
+* cluttered
+* inconsistent

@@ -1,6 +1,57 @@
 # SaaS Project Management Platform
 
-A modern **team collaboration and project management platform** that helps teams organize projects, manage tasks, and collaborate efficiently.
+A modern **team collaboration and project management platform**
+
+---
+
+# Setup (Phase 1)
+
+1. **Install PHP dependencies**
+   ```bash
+   composer install
+   ```
+
+2. **Configure environment**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+   Ensure `.env` has MySQL configured:
+   ```
+   DB_CONNECTION=mysql
+   DB_DATABASE=saas_project_management
+   DB_USERNAME=root
+   DB_PASSWORD=
+   ```
+
+3. **Run migrations**
+   ```bash
+   php artisan migrate
+   ```
+
+4. **Install frontend dependencies**
+   ```bash
+   npm install
+   ```
+
+5. **Build assets**
+   ```bash
+   npm run build
+   ```
+
+6. **Start development**
+   ```bash
+   composer run dev
+   ```
+   Or separately: `php artisan serve` and `npm run dev`.
+
+7. **Run tests**
+   ```bash
+   php artisan test
+   npm run test
+   ```
+
+--- that helps teams organize projects, manage tasks, and collaborate efficiently.
 
 The system allows teams to create **workspaces**, manage **projects**, organize work using **Kanban boards**, assign **tasks**, communicate through **comments**, and track activity across the entire team.
 
