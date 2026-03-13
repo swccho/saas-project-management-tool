@@ -82,7 +82,11 @@ class TaskController extends Controller
             abort(404);
         }
 
-        return ApiResponse::success(data: new TaskResource($task->load(['assignee', 'labels', 'subtasks'])));
+        $task->load(['assignee', 'labels', 'subtasks']);
+        $task->setAttribute('is_watching', $task->watchers()->where('user_id', auth()->id())->exists());
+        $task->setAttribute('watchers_count', $task->watchers()->count());
+
+        return ApiResponse::success(data: new TaskResource($task));
     }
 
     public function update(UpdateTaskRequest $request, Workspace $workspace, Project $project, Board $board, Task $task): JsonResponse

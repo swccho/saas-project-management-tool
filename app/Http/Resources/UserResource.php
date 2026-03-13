@@ -16,6 +16,8 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
+            'avatar' => $this->avatar,
+            'avatar_url' => $this->when($this->avatar, fn () => app(\App\Services\ProfileService::class)->getAvatarUrl($this->resource)),
             'email_verified_at' => $this->email_verified_at?->toIso8601String(),
             'created_at' => $this->created_at->toIso8601String(),
             'updated_at' => $this->updated_at->toIso8601String(),

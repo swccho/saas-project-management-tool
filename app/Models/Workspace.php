@@ -14,8 +14,21 @@ class Workspace extends Model
     protected $fillable = [
         'name',
         'slug',
+        'description',
+        'preferences',
+        'logo_path',
+        'icon_path',
+        'accent_color',
+        'short_description',
         'owner_id',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'preferences' => 'array',
+        ];
+    }
 
     public function owner(): BelongsTo
     {
@@ -30,5 +43,15 @@ class Workspace extends Model
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class);
+    }
+
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(WorkspaceInvitation::class);
+    }
+
+    public function auditLogs(): HasMany
+    {
+        return $this->hasMany(WorkspaceAuditLog::class);
     }
 }

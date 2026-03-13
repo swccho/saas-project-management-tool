@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
+import { handleApiError } from '../services/apiErrorHandler';
 
 const apiClient = axios.create({
   baseURL: '/api/v1',
@@ -24,7 +25,10 @@ apiClient.interceptors.response.use(
       const authStore = useAuthStore();
       authStore.logout();
       window.location.href = '/login';
+      return Promise.reject(error);
     }
+    const isAuthEndpoint = /\/auth\/(login|register)$/.test(error.config?.url || '');
+    handleApiError(error, { suppressToast: error.config?.skipGlobalErrorToast || isAuthEndpoint });
     return Promise.reject(error);
   }
 );

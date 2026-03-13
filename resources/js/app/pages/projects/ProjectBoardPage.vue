@@ -25,10 +25,13 @@
 
     <template v-else-if="boards.length === 0">
       <Card>
-        <CardContent class="py-12 text-center">
-          <h3 class="text-lg font-medium text-gray-900">No boards yet</h3>
-          <p class="mt-1 text-sm text-gray-600">Create your first board to get started.</p>
-          <Button class="mt-4" @click="showCreateBoard = true">Create board</Button>
+        <CardContent class="p-0">
+          <EmptyState
+            title="No boards yet"
+            description="Create your first board to get started."
+          >
+            <Button @click="showCreateBoard = true">Create board</Button>
+          </EmptyState>
         </CardContent>
       </Card>
     </template>
@@ -218,6 +221,18 @@
       :add-subtask="addSubtaskToTask"
       :toggle-subtask="toggleSubtaskComplete"
       :activities="drawerActivities"
+      :attachments="drawerAttachments"
+      :attachments-loading="drawerAttachmentsLoading"
+      :upload-attachment="uploadAttachmentToTask"
+      :delete-attachment="deleteTaskAttachment"
+      :download-attachment="downloadTaskAttachment"
+      :comments="drawerComments"
+      :comments-loading="drawerCommentsLoading"
+      :add-comment="addCommentToTask"
+      :update-comment="updateTaskComment"
+      :delete-comment="deleteTaskComment"
+      :set-watch="setTaskWatch"
+      :unset-watch="unsetTaskWatch"
     />
   </div>
 </template>
@@ -235,6 +250,8 @@ import { projectMemberService } from '../../services/projectMemberService';
 import { labelService } from '../../services/labelService';
 import { subtaskService } from '../../services/subtaskService';
 import { taskActivityService } from '../../services/taskActivityService';
+import { commentService } from '../../services/commentService';
+import { attachmentService } from '../../services/attachmentService';
 import { boardViewService } from '../../services/boardViewService';
 import { VueDraggableNext as draggable } from 'vue-draggable-next';
 import { useBoardFilters } from '../../composables/useBoardFilters';
@@ -245,6 +262,7 @@ import BoardFilterBar from '../../components/boards/BoardFilterBar.vue';
 import BoardViewSelector from '../../components/boards/BoardViewSelector.vue';
 import BoardSkeleton from '../../components/boards/BoardSkeleton.vue';
 import EmptyColumnState from '../../components/boards/EmptyColumnState.vue';
+import EmptyState from '../../components/shared/EmptyState.vue';
 import TaskDetailsDrawer from '../../components/tasks/TaskDetailsDrawer.vue';
 import Card from '../../components/ui/Card.vue';
 import CardContent from '../../components/ui/CardContent.vue';
@@ -338,6 +356,10 @@ async function addTask() {
 const selectedTaskId = ref(null);
 const showTaskDrawer = ref(false);
 const drawerActivities = ref([]);
+const drawerComments = ref([]);
+const drawerCommentsLoading = ref(false);
+const drawerAttachments = ref([]);
+const drawerAttachmentsLoading = ref(false);
 
 function openTask(t) {
   selectedTaskId.value = t.id;
@@ -590,11 +612,110 @@ watch([showTaskDrawer, selectedTaskId], async ([open, taskId]) => {
       } catch {
         drawerActivities.value = [];
       }
+      drawerCommentsLoading.value = true;
+      drawerAttachmentsLoading.value = true;
+      try {
+        const [commentsData, attachmentsData] = await Promise.all([
+          commentService.list(wid, pid, bid, taskId),
+          attachmentService.list(wid, pid, bid, taskId),
+        ]);
+        drawerComments.value = Array.isArray(commentsData) ? commentsData : (commentsData?.data ?? []);
+        drawerAttachments.value = Array.isArray(attachmentsData) ? attachmentsData : (attachmentsData?.data ?? []);
+      } catch {
+        drawerComments.value = [];
+        drawerAttachments.value = [];
+      } finally {
+        drawerCommentsLoading.value = false;
+        drawerAttachmentsLoading.value = false;
+      }
     }
   } else {
     drawerActivities.value = [];
+    drawerComments.value = [];
+    drawerAttachments.value = [];
   }
 });
+
+async function addCommentToTask(body) {
+  const wid = workspaceStore.activeWorkspaceId;
+  const pid = projectId.value;
+  const bid = selectedBoardId.value;
+  const taskId = selectedTaskId.value;
+  if (!wid || !pid || !bid || !taskId) return;
+  const comment = await commentService.create(wid, pid, bid, taskId, { body });
+  drawerComments.value = [...drawerComments.value, comment];
+}
+
+async function updateTaskComment(commentId, body) {
+  const wid = workspaceStore.activeWorkspaceId;
+  const pid = projectId.value;
+  const bid = selectedBoardId.value;
+  const taskId = selectedTaskId.value;
+  if (!wid || !pid || !bid || !taskId) return;
+  const updated = await commentService.update(wid, pid, bid, taskId, commentId, { body });
+  drawerComments.value = drawerComments.value.map((c) => (c.id === commentId ? updated : c));
+}
+
+async function deleteTaskComment(commentId) {
+  const wid = workspaceStore.activeWorkspaceId;
+  const pid = projectId.value;
+  const bid = selectedBoardId.value;
+  const taskId = selectedTaskId.value;
+  if (!wid || !pid || !bid || !taskId) return;
+  await commentService.delete(wid, pid, bid, taskId, commentId);
+  drawerComments.value = drawerComments.value.filter((c) => c.id !== commentId);
+}
+
+async function setTaskWatch(taskId) {
+  const wid = workspaceStore.activeWorkspaceId;
+  const pid = projectId.value;
+  const bid = selectedBoardId.value;
+  if (!wid || !pid || !bid) return;
+  await taskService.watch(wid, pid, bid, taskId);
+}
+
+async function unsetTaskWatch(taskId) {
+  const wid = workspaceStore.activeWorkspaceId;
+  const pid = projectId.value;
+  const bid = selectedBoardId.value;
+  if (!wid || !pid || !bid) return;
+  await taskService.unwatch(wid, pid, bid, taskId);
+}
+
+async function uploadAttachmentToTask(file) {
+  const wid = workspaceStore.activeWorkspaceId;
+  const pid = projectId.value;
+  const bid = selectedBoardId.value;
+  const taskId = selectedTaskId.value;
+  if (!wid || !pid || !bid || !taskId) return;
+  const data = await attachmentService.upload(wid, pid, bid, taskId, file);
+  drawerAttachments.value = [data, ...drawerAttachments.value];
+}
+
+async function deleteTaskAttachment(attachmentId) {
+  const wid = workspaceStore.activeWorkspaceId;
+  const pid = projectId.value;
+  const bid = selectedBoardId.value;
+  const taskId = selectedTaskId.value;
+  if (!wid || !pid || !bid || !taskId) return;
+  await attachmentService.delete(wid, pid, bid, taskId, attachmentId);
+  drawerAttachments.value = drawerAttachments.value.filter((a) => a.id !== attachmentId);
+}
+
+async function downloadTaskAttachment(attachment) {
+  const wid = workspaceStore.activeWorkspaceId;
+  const pid = projectId.value;
+  const bid = selectedBoardId.value;
+  const taskId = selectedTaskId.value;
+  if (!wid || !pid || !bid || !taskId) return;
+  const blob = await attachmentService.downloadBlob(wid, pid, bid, taskId, attachment.id);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = attachment.original_name || 'download';
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 async function addColumn() {
   const wid = workspaceStore.activeWorkspaceId;
@@ -679,8 +800,8 @@ async function deleteColumn(col) {
   try {
     await boardColumnService.delete(wid, pid, bid, col.id);
     await fetchTasks();
-  } catch (e) {
-    alert(e.response?.data?.message ?? 'Failed to delete column.');
+  } catch {
+    // Error toast shown by apiClient interceptor
   }
 }
 

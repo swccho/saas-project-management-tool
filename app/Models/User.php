@@ -22,6 +22,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'avatar',
         'password',
     ];
 
@@ -58,5 +59,21 @@ class User extends Authenticatable
         return $this->belongsToMany(Workspace::class, 'workspace_members')
             ->withPivot('role')
             ->withTimestamps();
+    }
+
+    public function notifications(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Notification::class)->orderByDesc('created_at');
+    }
+
+    public function presence(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(UserPresence::class);
+    }
+
+    public function favoriteProjects(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Project::class, 'user_favorite_projects', 'user_id', 'project_id')
+            ->withPivot('created_at');
     }
 }

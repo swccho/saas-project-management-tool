@@ -77,4 +77,20 @@ class Task extends Model
     {
         return $this->hasMany(TaskActivity::class)->orderByDesc('created_at');
     }
+
+    public function comments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TaskComment::class)->whereNull('parent_id')->orderBy('created_at');
+    }
+
+    public function watchers(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'task_watchers', 'task_id', 'user_id')
+            ->withPivot('created_at');
+    }
+
+    public function attachments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TaskAttachment::class)->orderByDesc('created_at');
+    }
 }

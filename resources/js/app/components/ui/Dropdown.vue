@@ -3,9 +3,8 @@
     <div @click="open = !open">
       <slot name="trigger" />
     </div>
-    <Teleport to="body">
+    <Teleport v-if="open" to="body">
       <div
-        v-if="open"
         class="absolute z-50 min-w-[8rem] overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
         :style="dropdownStyle"
       >

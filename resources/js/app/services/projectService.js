@@ -26,4 +26,19 @@ export const projectService = {
   async delete(workspaceId, projectId) {
     await apiClient.delete(`/workspaces/${workspaceId}/projects/${projectId}`);
   },
+
+  async favorite(workspaceId, projectId) {
+    const res = await apiClient.post(`/workspaces/${workspaceId}/projects/${projectId}/favorite`);
+    return unwrap(res);
+  },
+
+  async unfavorite(workspaceId, projectId) {
+    const res = await apiClient.delete(`/workspaces/${workspaceId}/projects/${projectId}/favorite`);
+    return unwrap(res);
+  },
+
+  async listFavorites(workspaceId) {
+    const res = await apiClient.get(`/workspaces/${workspaceId}/favorites`);
+    return unwrap(res);
+  },
 };

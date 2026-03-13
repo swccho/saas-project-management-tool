@@ -4,9 +4,15 @@
     <Card>
       <CardHeader>
         <h2 class="text-lg font-semibold">Account</h2>
+        <p class="text-sm text-gray-600">Manage your profile, password, and avatar.</p>
       </CardHeader>
       <CardContent>
-        <p class="text-sm text-gray-600">{{ authStore.user?.name }} ({{ authStore.user?.email }})</p>
+        <router-link
+          to="/settings/profile"
+          class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-700"
+        >
+          Profile settings →
+        </router-link>
       </CardContent>
     </Card>
     <Card>

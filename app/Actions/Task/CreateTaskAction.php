@@ -5,12 +5,14 @@ namespace App\Actions\Task;
 use App\Models\BoardColumn;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\ActivityService;
 use App\Services\TaskActivityService;
 
 class CreateTaskAction
 {
     public function __construct(
-        private readonly TaskActivityService $activityService
+        private readonly TaskActivityService $activityService,
+        private readonly ActivityService $activityServiceGlobal
     ) {}
 
     public function execute(User $user, BoardColumn $column, array $data): Task
@@ -35,6 +37,11 @@ class CreateTaskAction
 
         $this->activityService->log($task, 'created', $user, 'Task created', [
             'column_id' => $column->id,
+        ]);
+
+        $this->activityServiceGlobal->log($project, 'task_created', $task, $user, [
+            'task_title' => $task->title,
+            'task_id' => $task->id,
         ]);
 
         return $task;

@@ -70,4 +70,18 @@ export const taskService = {
     );
     return unwrap(res);
   },
+
+  async watch(workspaceId, projectId, boardId, taskId) {
+    const res = await apiClient.post(
+      `/workspaces/${workspaceId}/projects/${projectId}/boards/${boardId}/tasks/${taskId}/watch`
+    );
+    return unwrap(res);
+  },
+
+  async unwatch(workspaceId, projectId, boardId, taskId) {
+    const res = await apiClient.delete(
+      `/workspaces/${workspaceId}/projects/${projectId}/boards/${boardId}/tasks/${taskId}/watch`
+    );
+    return unwrap(res);
+  },
 };

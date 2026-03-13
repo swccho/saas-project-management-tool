@@ -16,6 +16,7 @@ class WorkspaceResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
+            'description' => $this->description,
             'owner_id' => $this->owner_id,
             'owner' => $this->whenLoaded('owner', fn () => [
                 'id' => $this->owner->id,

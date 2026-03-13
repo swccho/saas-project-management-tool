@@ -42,9 +42,9 @@ export const useAuthStore = defineStore('auth', {
       return data;
     },
 
-    async register(name, email, password, password_confirmation) {
-      const data = await authService.register(name, email, password, password_confirmation);
-      this.setAuth(data.user, data.token);
+    async register(name, email, password, password_confirmation, invitation_token = null) {
+      const data = await authService.register(name, email, password, password_confirmation, invitation_token);
+      this.setAuth(data?.user ?? data, data?.token);
       return data;
     },
   },

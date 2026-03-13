@@ -1,7 +1,8 @@
 <template>
   <router-view />
+  <Toaster richColors position="top-right" />
 </template>
 
 <script setup>
-// App root - router handles layout switching
+import { Toaster } from 'vue-sonner';
 </script>

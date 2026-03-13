@@ -43,6 +43,8 @@ class TaskResource extends JsonResource
                 'is_completed' => $s->is_completed,
                 'sort_order' => $s->sort_order,
             ])),
+            'is_watching' => $this->when(isset($this->is_watching), (bool) $this->is_watching),
+            'watchers_count' => $this->when(isset($this->watchers_count), (int) $this->watchers_count),
             'created_at' => $this->created_at->toIso8601String(),
             'updated_at' => $this->updated_at->toIso8601String(),
         ];

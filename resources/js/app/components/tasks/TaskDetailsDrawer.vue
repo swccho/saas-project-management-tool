@@ -1,7 +1,6 @@
 <template>
-  <Teleport to="body">
+  <Teleport v-if="modelValue" to="body">
     <div
-      v-if="modelValue"
       class="fixed inset-0 z-50"
       @click.self="$emit('update:modelValue', false)"
     >
@@ -25,9 +24,21 @@
             </button>
           </div>
           <div class="space-y-6 p-6">
-            <div>
-              <h3 class="text-xl font-semibold text-gray-900">{{ task.title }}</h3>
-              <p class="mt-1 text-sm text-gray-500">#{{ task.task_number }}</p>
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h3 class="text-xl font-semibold text-gray-900">{{ task.title }}</h3>
+                <p class="mt-1 text-sm text-gray-500">#{{ task.task_number }}</p>
+              </div>
+              <button
+                v-if="props.setWatch && props.unsetWatch"
+                type="button"
+                class="shrink-0 rounded px-2 py-1 text-sm"
+                :class="task.is_watching ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                @click="toggleWatch"
+              >
+                {{ task.is_watching ? 'Unwatch' : 'Watch' }}
+                <span v-if="task.watchers_count > 0" class="ml-1 text-xs">({{ task.watchers_count }})</span>
+              </button>
             </div>
             <div v-if="task.description">
               <h4 class="text-sm font-medium text-gray-700">Description</h4>
@@ -44,7 +55,7 @@
               <div v-else class="flex flex-wrap items-center gap-2">
                 <span class="text-xs text-gray-500">Assignee:</span>
                 <template v-if="task.assignee">
-                  <Avatar :name="task.assignee?.name" size="sm" />
+                  <Avatar :name="task.assignee?.name" :status="presenceStatus(task.assignee?.id)" size="sm" />
                   <span class="text-sm">{{ task.assignee?.name }}</span>
                 </template>
                 <button
@@ -156,6 +167,21 @@
                   <Button size="sm" type="submit">Add</Button>
                 </form>
               </div>
+              <TaskAttachmentsSection
+                :attachments="attachments"
+                :loading="attachmentsLoading"
+                :upload-attachment="uploadAttachment"
+                :delete-attachment="deleteAttachment"
+                :download-attachment="downloadAttachment"
+              />
+              <TaskCommentsSection
+                :comments="comments"
+                :loading="commentsLoading"
+                :members="projectMembers"
+                :add-comment="addComment"
+                :update-comment="updateComment"
+                :delete-comment="deleteComment"
+              />
               <div v-if="activities.length > 0" class="space-y-2">
                 <h4 class="text-sm font-medium text-gray-700">Activity</h4>
                 <div class="space-y-6">
@@ -164,7 +190,7 @@
                     :key="a.id"
                     class="flex gap-3"
                   >
-                    <Avatar :name="a.user?.name" size="sm" />
+                    <Avatar :name="a.user?.name" :status="presenceStatus(a.user?.id)" size="sm" />
                     <div class="flex-1 space-y-0.5">
                       <p class="text-sm text-gray-900">{{ a.message }}</p>
                       <p class="text-xs text-gray-500">{{ formatActivityTime(a.created_at) }}</p>
@@ -172,7 +198,12 @@
                   </div>
                 </div>
               </div>
-              <div v-else class="text-sm text-gray-500">No activity yet.</div>
+              <EmptyState
+                v-else
+                title="No activity yet"
+                :compact="true"
+                :icon="Activity"
+              />
               <div class="flex items-center gap-2">
                 <span class="text-xs text-gray-500">Status:</span>
                 <select
@@ -208,9 +239,20 @@
 
 <script setup>
 import { watch, ref, onMounted, onUnmounted } from 'vue';
+import { Activity } from 'lucide-vue-next';
 import Avatar from '../ui/Avatar.vue';
+import EmptyState from '../shared/EmptyState.vue';
+import { usePresenceStore } from '../../stores/presenceStore';
+
+const presenceStore = usePresenceStore();
+
+function presenceStatus(userId) {
+  return userId ? presenceStore.getStatus(userId) : '';
+}
 import Button from '../ui/Button.vue';
 import AssigneeSelector from './AssigneeSelector.vue';
+import TaskAttachmentsSection from './TaskAttachmentsSection.vue';
+import TaskCommentsSection from './TaskCommentsSection.vue';
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -223,6 +265,18 @@ const props = defineProps({
   setLabels: { type: Function, default: null },
   addSubtask: { type: Function, default: null },
   toggleSubtask: { type: Function, default: null },
+  comments: { type: Array, default: () => [] },
+  commentsLoading: { type: Boolean, default: false },
+  attachments: { type: Array, default: () => [] },
+  attachmentsLoading: { type: Boolean, default: false },
+  uploadAttachment: { type: Function, default: null },
+  deleteAttachment: { type: Function, default: null },
+  downloadAttachment: { type: Function, default: null },
+  addComment: { type: Function, default: null },
+  updateComment: { type: Function, default: null },
+  deleteComment: { type: Function, default: null },
+  setWatch: { type: Function, default: null },
+  unsetWatch: { type: Function, default: null },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -318,6 +372,23 @@ async function toggleSubtask(s) {
   try {
     await props.toggleSubtask(task.value.id, s.id, !s.is_completed);
     s.is_completed = !s.is_completed;
+  } catch {
+    // Handle error
+  }
+}
+
+async function toggleWatch() {
+  if (!task.value || !props.setWatch || !props.unsetWatch) return;
+  try {
+    if (task.value.is_watching) {
+      await props.unsetWatch(task.value.id);
+      task.value.is_watching = false;
+      task.value.watchers_count = Math.max(0, (task.value.watchers_count ?? 0) - 1);
+    } else {
+      await props.setWatch(task.value.id);
+      task.value.is_watching = true;
+      task.value.watchers_count = (task.value.watchers_count ?? 0) + 1;
+    }
   } catch {
     // Handle error
   }

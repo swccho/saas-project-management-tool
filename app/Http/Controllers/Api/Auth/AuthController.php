@@ -23,12 +23,14 @@ class AuthController extends Controller
             name: $request->validated('name'),
             email: $request->validated('email'),
             password: $request->validated('password'),
+            invitationToken: $request->validated('invitation_token'),
         );
 
         return ApiResponse::success(
             data: [
                 'user' => new UserResource($result['user']),
                 'token' => $result['token'],
+                'workspace_id' => $result['workspace_id'] ?? null,
             ],
             status: 201
         );

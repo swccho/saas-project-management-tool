@@ -21,6 +21,7 @@ class UpdateWorkspaceRequest extends FormRequest
 
         return [
             'name' => ['sometimes', 'string', 'max:255'],
+            'description' => ['sometimes', 'nullable', 'string', 'max:2000'],
             'slug' => [
                 'sometimes',
                 'string',

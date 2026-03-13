@@ -13,6 +13,13 @@
       <div v-if="loading" class="space-y-3">
         <div v-for="i in 3" :key="i" class="h-12 animate-pulse rounded bg-gray-100" />
       </div>
+      <EmptyState
+        v-else-if="members.length === 0"
+        title="No members yet"
+        description="Add workspace members to the project."
+        :compact="true"
+        :icon="Users"
+      />
       <ul v-else class="divide-y divide-gray-200">
         <li
           v-for="m in members"
@@ -36,9 +43,6 @@
           </div>
         </li>
       </ul>
-      <p v-if="!loading && members.length === 0" class="py-4 text-center text-sm text-gray-500">
-        No members yet. Add workspace members to the project.
-      </p>
 
       <div
         v-if="showAdd"
@@ -96,11 +100,13 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { Users } from 'lucide-vue-next';
 import { workspaceService } from '../../services/workspaceService';
 import { projectMemberService } from '../../services/projectMemberService';
 import Card from '../ui/Card.vue';
 import CardHeader from '../ui/CardHeader.vue';
 import CardContent from '../ui/CardContent.vue';
+import EmptyState from '../shared/EmptyState.vue';
 import Button from '../ui/Button.vue';
 import Avatar from '../ui/Avatar.vue';
 import Select from '../ui/Select.vue';
@@ -163,8 +169,8 @@ async function addMember(wm) {
     });
     showAdd.value = false;
     await fetchMembers();
-  } catch (e) {
-    // Handle error
+  } catch {
+    // Error toast shown by apiClient interceptor
   }
 }
 

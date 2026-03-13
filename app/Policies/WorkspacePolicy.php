@@ -27,6 +27,11 @@ class WorkspacePolicy
         return $workspace->owner_id === $user->id;
     }
 
+    public function manageMembers(User $user, Workspace $workspace): bool
+    {
+        return $this->isOwnerOrAdmin($user, $workspace);
+    }
+
     private function isMember(User $user, Workspace $workspace): bool
     {
         return $workspace->members()->where('user_id', $user->id)->exists();

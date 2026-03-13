@@ -6,9 +6,14 @@ use App\Models\Board;
 use App\Models\BoardColumn;
 use App\Models\Project;
 use App\Models\User;
+use App\Services\ActivityService;
 
 class CreateBoardAction
 {
+    public function __construct(
+        private readonly ActivityService $activityService
+    ) {}
+
     private const DEFAULT_COLUMNS = [
         'Backlog',
         'Todo',
@@ -37,6 +42,11 @@ class CreateBoardAction
                 'sort_order' => $i,
             ]);
         }
+
+        $this->activityService->log($project, 'board_created', $board, $user, [
+            'board_name' => $board->name,
+            'board_id' => $board->id,
+        ]);
 
         return $board->load('columns');
     }

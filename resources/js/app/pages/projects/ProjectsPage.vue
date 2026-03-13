@@ -9,8 +9,12 @@
 
     <template v-if="!workspaceStore.activeWorkspace">
       <Card>
-        <CardContent class="py-8 text-center">
-          <p class="text-sm text-gray-600">Select or create a workspace to manage projects.</p>
+        <CardContent class="p-0">
+          <EmptyState
+            title="No workspace selected"
+            description="Select or create a workspace to manage projects."
+            :icon="Building2"
+          />
         </CardContent>
       </Card>
     </template>
@@ -23,17 +27,20 @@
 
     <template v-else-if="projects.length === 0">
       <Card>
-        <CardContent class="py-12 text-center">
-          <h3 class="text-lg font-medium text-gray-900">No projects yet</h3>
-          <p class="mt-1 text-sm text-gray-600">Create your first project to get started.</p>
-          <Button class="mt-4" @click="showCreate = true">Create project</Button>
+        <CardContent class="p-0">
+          <EmptyState
+            title="No projects yet"
+            description="Create your first project to get started."
+          >
+            <Button @click="showCreate = true">Create project</Button>
+          </EmptyState>
         </CardContent>
       </Card>
     </template>
 
     <template v-else>
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <ProjectCard v-for="p in projects" :key="p.id" :project="p" />
+        <ProjectCard v-for="p in projects" :key="p.id" :project="p" @favorite-changed="fetchProjects" />
       </div>
     </template>
 
@@ -47,13 +54,16 @@
 
 <script setup>
 import { ref, watch, onMounted } from 'vue';
+import { Building2 } from 'lucide-vue-next';
 import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { projectService } from '../../services/projectService';
+import { showSuccessToast } from '../../services/apiErrorHandler';
 import Button from '../../components/ui/Button.vue';
 import Card from '../../components/ui/Card.vue';
 import CardContent from '../../components/ui/CardContent.vue';
 import ProjectCard from '../../components/projects/ProjectCard.vue';
 import CreateProjectModal from '../../components/projects/CreateProjectModal.vue';
+import EmptyState from '../../components/shared/EmptyState.vue';
 
 const workspaceStore = useWorkspaceStore();
 const projects = ref([]);
@@ -83,6 +93,7 @@ async function handleCreate(formData) {
   try {
     await projectService.create(wid, formData);
     showCreate.value = false;
+    showSuccessToast('Project created successfully');
     await fetchProjects();
   } finally {
     creating.value = false;

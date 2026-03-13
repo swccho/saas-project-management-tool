@@ -7,7 +7,9 @@ use App\Http\Resources\Task\TaskResource;
 use App\Models\Board;
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\User;
 use App\Models\Workspace;
+use App\Services\NotificationService;
 use App\Services\TaskActivityService;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +18,8 @@ use Illuminate\Http\Request;
 class TaskMetaController extends Controller
 {
     public function __construct(
-        private readonly TaskActivityService $activityService
+        private readonly TaskActivityService $activityService,
+        private readonly NotificationService $notificationService
     ) {}
 
     public function update(Request $request, Workspace $workspace, Project $project, Board $board, Task $task): JsonResponse
@@ -39,6 +42,30 @@ class TaskMetaController extends Controller
 
         if (!empty($validated)) {
             $this->activityService->log($task, 'meta_updated', $request->user(), 'Task metadata updated', $validated);
+
+            if (isset($validated['due_date'])) {
+                $actor = $request->user();
+                $excludeIds = array_filter([$actor->id, $task->assigned_to]);
+                foreach ($task->watchers()->pluck('user_id') as $watcherId) {
+                    if (in_array($watcherId, $excludeIds, true)) {
+                        continue;
+                    }
+                    $watcher = User::find($watcherId);
+                    if ($watcher) {
+                        $this->notificationService->create(
+                            $watcher,
+                            'task_due_changed',
+                            'Due date changed',
+                            "{$actor->name} changed the due date on \"{$task->title}\"",
+                            [
+                                'task_id' => $task->id,
+                                'project_id' => $task->project_id,
+                                'workspace_id' => $task->workspace_id,
+                            ]
+                        );
+                    }
+                }
+            }
         }
 
         return ApiResponse::success(data: new TaskResource($task->fresh()->load('assignee')));

@@ -15,6 +15,7 @@ class TaskActivity extends Model
         'type',
         'message',
         'meta',
+        'created_at',
     ];
 
     protected function casts(): array

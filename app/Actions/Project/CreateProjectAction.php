@@ -6,10 +6,15 @@ use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\User;
 use App\Models\Workspace;
+use App\Services\ActivityService;
 use Illuminate\Support\Str;
 
 class CreateProjectAction
 {
+    public function __construct(
+        private readonly ActivityService $activityService
+    ) {}
+
     public function execute(User $user, Workspace $workspace, array $data): Project
     {
         $slug = Str::slug($data['name']);
@@ -31,6 +36,11 @@ class CreateProjectAction
             'project_id' => $project->id,
             'user_id' => $user->id,
             'role' => ProjectMember::ROLE_PROJECT_ADMIN,
+        ]);
+
+        $this->activityService->log($workspace, 'project_created', $project, $user, [
+            'project_name' => $project->name,
+            'project_id' => $project->id,
         ]);
 
         return $project;

@@ -27,6 +27,14 @@ class ProjectController extends Controller
             ->orderBy('name')
             ->get();
 
+        $user = request()->user();
+        $favoriteIds = $user
+            ? $user->favoriteProjects()->whereIn('project_id', $projects->pluck('id'))->pluck('project_id')->flip()
+            : collect();
+        foreach ($projects as $p) {
+            $p->setAttribute('is_favorite', isset($favoriteIds[$p->id]));
+        }
+
         return ApiResponse::success(data: ProjectResource::collection($projects));
     }
 
@@ -54,7 +62,11 @@ class ProjectController extends Controller
             abort(404);
         }
 
-        return ApiResponse::success(data: new ProjectResource($project->load('creator')));
+        $user = request()->user();
+        $project->setAttribute('is_favorite', $user && $user->favoriteProjects()->where('project_id', $project->id)->exists());
+        $project->load('creator');
+
+        return ApiResponse::success(data: new ProjectResource($project));
     }
 
     public function update(UpdateProjectRequest $request, Workspace $workspace, Project $project): JsonResponse

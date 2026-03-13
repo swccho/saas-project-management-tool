@@ -13,12 +13,15 @@
       </div>
       <nav class="flex-1 space-y-1 p-4">
         <WorkspaceSwitcher />
+        <SidebarFavorites />
         <router-link
           v-for="item in navItems"
           :key="item.path"
           :to="item.path"
-          active-class="bg-indigo-50 text-indigo-700"
-          class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+          :class="[
+            'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-gray-100',
+            isNavItemActive(item) ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700',
+          ]"
         >
           <component :is="item.icon" class="h-5 w-5 shrink-0" />
           <span v-if="!uiStore.sidebarCollapsed">{{ item.label }}</span>
@@ -42,7 +45,7 @@
           />
         </div>
         <div class="flex items-center gap-2">
-          <span class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-xs">🔔</span>
+          <NotificationDropdown />
           <UserMenu />
         </div>
       </header>
@@ -54,17 +57,55 @@
 </template>
 
 <script setup>
-import { LayoutDashboard, FolderKanban, ListTodo, Settings } from 'lucide-vue-next';
+import { onMounted, onUnmounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { LayoutDashboard, FolderKanban, ListTodo, Settings, Activity, Calendar } from 'lucide-vue-next';
+import { useAuthStore } from '../stores/authStore';
 import { useUiStore } from '../stores/uiStore';
+import { useWorkspaceStore } from '../stores/workspaceStore';
+import { usePresenceStore } from '../stores/presenceStore';
+import { presenceService } from '../services/presenceService';
 import WorkspaceSwitcher from '../components/shared/WorkspaceSwitcher.vue';
+import SidebarFavorites from '../components/shared/SidebarFavorites.vue';
+import NotificationDropdown from '../components/shared/NotificationDropdown.vue';
 import UserMenu from '../components/shared/UserMenu.vue';
 
+const authStore = useAuthStore();
 const uiStore = useUiStore();
+const presenceStore = usePresenceStore();
+const route = useRoute();
+
+onMounted(() => {
+  if (authStore.isAuthenticated) {
+    presenceService.startHeartbeat();
+    presenceStore.fetchPresence();
+  }
+});
+
+onUnmounted(() => {
+  presenceService.stopHeartbeat();
+});
+
+watch(() => useWorkspaceStore().activeWorkspaceId, () => {
+  if (authStore.isAuthenticated) {
+    presenceStore.fetchPresence();
+  }
+}, { immediate: false });
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/activity', label: 'Activity', icon: Activity },
   { path: '/projects', label: 'Projects', icon: FolderKanban },
   { path: '/my-tasks', label: 'My Tasks', icon: ListTodo },
+  { path: '/calendar', label: 'Calendar', icon: Calendar },
   { path: '/settings', label: 'Settings', icon: Settings },
 ];
+
+function isNavItemActive(item) {
+  const path = route.path;
+  if (item.path === '/') {
+    return path === '/';
+  }
+  return path === item.path || path.startsWith(item.path + '/');
+}
 </script>

@@ -51,7 +51,17 @@ A modern **team collaboration and project management platform**
    npm run test
    ```
 
---- that helps teams organize projects, manage tasks, and collaborate efficiently.
+8. **Seed demo data** (optional, for local/demo)
+   ```bash
+   php artisan db:seed
+   ```
+   Or set `SEED_DEMO=true` in `.env` to always seed demo data. Demo includes 2 workspaces, 6 projects, tasks, comments, and notifications.
+
+---
+
+# Portfolio Summary
+
+A production-ready **SaaS Project Management Platform** that helps teams organize projects, manage tasks, and collaborate efficiently.
 
 The system allows teams to create **workspaces**, manage **projects**, organize work using **Kanban boards**, assign **tasks**, communicate through **comments**, and track activity across the entire team.
 
@@ -488,6 +498,19 @@ Members Management
 Notifications
 Workspace Settings
 User Profile
+
+---
+
+# Testing
+
+- **Backend:** PHPUnit feature and unit tests for auth, workspaces, projects, boards, tasks, comments, notifications, invitations, dashboard, profile, and workspace isolation.
+- **Frontend:** Vitest component tests for Button, EmptyState, CreateProjectModal, LoginPage.
+- **Philosophy:** Meaningful behavioral tests over coverage metrics; focus on authorization, validation, and workspace isolation.
+
+```bash
+php artisan test    # Backend
+npm run test        # Frontend
+```
 
 ---
 
