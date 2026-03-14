@@ -3,7 +3,7 @@
     <div class="mx-auto max-w-2xl space-y-10">
       <header class="text-center">
         <h1 class="text-3xl font-bold tracking-tight text-gray-900">Kanbix</h1>
-        <p class="mt-2 text-lg text-gray-600">Project Management for Teams</p>
+        <p class="mt-2 text-lg text-gray-600">Manage projects, track tasks, and collaborate with your team.</p>
       </header>
 
       <section class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">

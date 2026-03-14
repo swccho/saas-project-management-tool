@@ -1,8 +1,8 @@
 <template>
   <Card class="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
     <CardHeader>
-      <h1 class="text-2xl font-semibold tracking-tight">Sign in</h1>
-      <p class="text-sm text-gray-500">Enter your credentials to access your account</p>
+      <h1 class="text-2xl font-semibold tracking-tight">Sign in to Kanbix</h1>
+      <p class="text-sm text-gray-500">Organize projects and collaborate with your team.</p>
     </CardHeader>
     <CardContent>
       <form class="space-y-4" @submit.prevent="submit">
@@ -93,7 +93,7 @@ async function submit() {
     } else {
       localStorage.removeItem(REMEMBER_EMAIL_KEY);
     }
-    router.push(route.query.redirect || '/');
+    router.push(route.query.redirect || '/app');
   } catch (err) {
     const res = err.response?.data;
     if (res?.errors) {

@@ -7,7 +7,7 @@
       <router-link
         v-for="p in favorites"
         :key="p.id"
-        :to="`/projects/${p.id}`"
+        :to="`/app/projects/${p.id}`"
         active-class="bg-indigo-50 text-indigo-700"
         class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
       >

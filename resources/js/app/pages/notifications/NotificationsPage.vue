@@ -55,7 +55,7 @@
             </Button>
             <router-link
               v-if="n.data?.task_id && n.data?.project_id"
-              :to="`/projects/${n.data.project_id}/board?task=${n.data.task_id}`"
+              :to="`/app/projects/${n.data.project_id}/board?task=${n.data.task_id}`"
               class="text-sm text-indigo-600 hover:underline"
             >
               View task

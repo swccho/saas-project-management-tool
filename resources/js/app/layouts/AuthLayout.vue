@@ -1,5 +1,6 @@
 <template>
-  <div class="flex min-h-screen flex-col lg:flex-row">
+  <div class="flex min-h-screen flex-col">
+    <div class="flex flex-1 flex-col lg:flex-row">
     <!-- Left panel: Branding (hidden on mobile, stacked on tablet, split on desktop) -->
     <div
       class="hidden flex-col justify-center px-8 py-12 md:flex md:min-h-[40vh] lg:min-h-full lg:w-1/2 lg:px-12"
@@ -8,14 +9,9 @@
       ]"
     >
       <div class="mx-auto max-w-md">
-        <h1 class="text-2xl font-bold tracking-tight text-gray-900">
-          Kanbix
-        </h1>
+        <h1 class="text-2xl font-bold tracking-tight text-gray-900">Kanbix</h1>
         <p class="mt-3 text-lg font-medium text-gray-700">
-          Manage projects, tasks, and teams effortlessly.
-        </p>
-        <p class="mt-2 text-sm text-gray-500">
-          Plan your work, track progress, and collaborate with your team in one place.
+          Organize projects and collaborate with your team.
         </p>
         <!-- Minimal kanban illustration -->
         <div class="mt-12 flex gap-3">
@@ -44,8 +40,11 @@
         <router-view />
       </div>
     </div>
+    </div>
+    <AuthFooter />
   </div>
 </template>
 
 <script setup>
+import AuthFooter from '../components/auth/AuthFooter.vue';
 </script>

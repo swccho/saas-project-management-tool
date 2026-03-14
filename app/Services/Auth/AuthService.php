@@ -4,13 +4,15 @@ namespace App\Services\Auth;
 
 use App\Models\User;
 use App\Models\WorkspaceInvitation;
+use App\Services\Demo\CreateDemoWorkspaceService;
 use App\Services\InvitationService;
 use Illuminate\Support\Facades\Hash;
 
 class AuthService
 {
     public function __construct(
-        private readonly InvitationService $invitationService
+        private readonly InvitationService $invitationService,
+        private readonly CreateDemoWorkspaceService $createDemoWorkspaceService
     ) {}
 
     public function register(string $name, string $email, string $password, ?string $invitationToken = null): array
@@ -31,6 +33,9 @@ class AuthService
                 $member = $this->invitationService->accept($invitation, $user);
                 $workspaceId = $member->workspace_id;
             }
+        } elseif (config('demo.create_on_registration', false)) {
+            $workspace = $this->createDemoWorkspaceService->createForUser($user);
+            $workspaceId = $workspace->id;
         }
 
         return [

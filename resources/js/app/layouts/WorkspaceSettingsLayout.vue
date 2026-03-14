@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <div class="flex items-center gap-4">
-      <router-link to="/settings" class="text-sm text-gray-600 hover:text-gray-900">
+      <router-link to="/app/settings" class="text-sm text-gray-600 hover:text-gray-900">
         ← Back to Settings
       </router-link>
     </div>
@@ -11,7 +11,7 @@
       <Card>
         <CardContent class="py-8 text-center">
           <p class="text-sm text-gray-600">No workspace selected. Create or select a workspace first.</p>
-          <router-link to="/" class="mt-4 inline-block text-sm font-medium text-indigo-600 hover:text-indigo-700">
+          <router-link to="/app" class="mt-4 inline-block text-sm font-medium text-indigo-600 hover:text-indigo-700">
             Go to Dashboard
           </router-link>
         </CardContent>
@@ -50,11 +50,11 @@ import CardContent from '../components/ui/CardContent.vue';
 const workspaceStore = useWorkspaceStore();
 
 const navItems = computed(() => [
-  { path: '/settings/workspace/general', label: 'General' },
-  { path: '/settings/workspace/members', label: 'Members' },
-  { path: '/settings/workspace/preferences', label: 'Preferences' },
-  { path: '/settings/workspace/branding', label: 'Branding' },
-  { path: '/settings/workspace/audit-logs', label: 'Audit Logs' },
-  { path: '/settings/workspace/danger', label: 'Danger Zone' },
+  { path: '/app/settings/workspace/general', label: 'General' },
+  { path: '/app/settings/workspace/members', label: 'Members' },
+  { path: '/app/settings/workspace/preferences', label: 'Preferences' },
+  { path: '/app/settings/workspace/branding', label: 'Branding' },
+  { path: '/app/settings/workspace/audit-logs', label: 'Audit Logs' },
+  { path: '/app/settings/workspace/danger', label: 'Danger Zone' },
 ]);
 </script>

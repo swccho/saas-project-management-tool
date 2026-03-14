@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <div class="flex items-center gap-4">
-      <router-link to="/settings" class="text-sm text-gray-600 hover:text-gray-900">
+      <router-link to="/app/settings" class="text-sm text-gray-600 hover:text-gray-900">
         ← Back to Settings
       </router-link>
     </div>

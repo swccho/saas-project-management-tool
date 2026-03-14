@@ -8,7 +8,7 @@
       </CardHeader>
       <CardContent>
         <router-link
-          to="/settings/profile"
+          to="/app/settings/profile"
           class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-700"
         >
           Profile settings →
@@ -22,7 +22,7 @@
       </CardHeader>
       <CardContent>
         <router-link
-          to="/settings/workspace"
+          to="/app/settings/workspace"
           class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-700"
         >
           Workspace settings →

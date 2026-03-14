@@ -18,6 +18,11 @@ export const workspaceService = {
     return unwrap(res);
   },
 
+  async createDemo() {
+    const res = await apiClient.post('/workspaces/demo');
+    return unwrap(res);
+  },
+
   async update(id, payload) {
     const res = await apiClient.put(`/workspaces/${id}`, payload);
     return unwrap(res);

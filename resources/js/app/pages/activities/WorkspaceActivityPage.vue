@@ -3,7 +3,7 @@
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-semibold text-gray-900">Workspace Activity</h1>
       <router-link
-        :to="`/`"
+        to="/app"
         class="text-sm text-indigo-600 hover:underline"
       >
         ← Dashboard

@@ -1,0 +1,1 @@
+import{_ as s,o,a as c,n as r}from"./main-C8XtA4gm.js";const a={},t={class:"flex flex-col space-y-1.5 p-6"};function n(e,l){return o(),c("div",t,[r(e.$slots,"default")])}const d=s(a,[["render",n]]);export{d as C};

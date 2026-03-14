@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         if (app()->environment('local') || env('SEED_DEMO', false)) {
-            $this->call(DemoSeeder::class);
+            $this->call(KanbixDemoSeeder::class);
         } else {
             User::factory()->create([
                 'name' => 'Test User',

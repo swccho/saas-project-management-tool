@@ -39,7 +39,7 @@
         description="Browse projects to find tasks or get assigned."
       >
         <router-link
-          to="/projects"
+          to="/app/projects"
           class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
         >
           Browse projects
@@ -60,7 +60,7 @@
             </div>
             <div class="mt-1 flex flex-wrap items-center gap-2">
               <router-link
-                :to="`/projects/${task.project?.id}`"
+                :to="`/app/projects/${task.project?.id}`"
                 class="text-xs text-indigo-600 hover:underline"
                 @click.stop
               >
@@ -170,7 +170,7 @@ function isOverdue(d) {
 
 function openTask(task) {
   if (task.project?.id) {
-    router.push({ path: `/projects/${task.project.id}/board`, query: { task: task.id } });
+    router.push({ path: `/app/projects/${task.project.id}/board`, query: { task: task.id } });
   }
 }
 

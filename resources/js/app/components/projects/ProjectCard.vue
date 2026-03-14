@@ -1,6 +1,6 @@
 <template>
   <div class="block rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
-    <router-link :to="`/projects/${project.id}`" class="block">
+    <router-link :to="`/app/projects/${project.id}`" class="block">
       <div class="flex items-start justify-between gap-2">
         <div class="min-w-0 flex-1">
           <h3 class="truncate font-medium text-gray-900">{{ project.name }}</h3>

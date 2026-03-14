@@ -8,7 +8,7 @@
         </div>
         <div v-else-if="!preview" class="py-8 text-center">
           <p class="text-sm text-red-600">Invalid or expired invitation link.</p>
-          <router-link to="/" class="mt-4 inline-block text-sm font-medium text-indigo-600">Go to Dashboard</router-link>
+          <router-link to="/app" class="mt-4 inline-block text-sm font-medium text-indigo-600">Go to Dashboard</router-link>
         </div>
         <div v-else-if="authStore.isAuthenticated && emailMatches" class="space-y-4">
           <h2 class="text-lg font-semibold">Workspace invitation</h2>
@@ -107,7 +107,7 @@ async function accept() {
     const data = await invitationService.accept(token.value);
     await workspaceStore.fetchWorkspaces();
     workspaceStore.setActive(data.workspace_id);
-    router.push('/');
+    router.push('/app');
   } catch (e) {
     error.value = e.response?.data?.message ?? 'Failed to accept invitation.';
   } finally {
@@ -120,7 +120,7 @@ async function reject() {
   rejecting.value = true;
   try {
     await invitationService.reject(token.value);
-    router.push('/');
+    router.push('/app');
   } catch (e) {
     error.value = e.response?.data?.message ?? 'Failed to decline.';
   } finally {

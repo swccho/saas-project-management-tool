@@ -34,7 +34,7 @@
               Mark all read
             </button>
             <router-link
-              to="/notifications"
+              to="/app/notifications"
               class="text-xs text-indigo-600 hover:underline"
               @click="open = false"
             >
@@ -125,7 +125,7 @@ function handleClick(n) {
     });
   }
   if (n.data?.task_id && n.data?.project_id && n.data?.workspace_id) {
-    window.location.href = `/projects/${n.data.project_id}/board?task=${n.data.task_id}`;
+    window.location.href = `/app/projects/${n.data.project_id}/board?task=${n.data.task_id}`;
   }
   open.value = false;
 }

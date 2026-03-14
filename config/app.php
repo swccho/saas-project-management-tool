@@ -15,6 +15,8 @@ return [
 
     'name' => env('APP_NAME', 'Kanbix'),
 
+    'display_title' => env('APP_DISPLAY_TITLE', 'Kanbix — Project Management SaaS'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

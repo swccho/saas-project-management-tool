@@ -1,9 +1,9 @@
 <template>
   <Card class="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
     <CardHeader>
-      <h1 class="text-2xl font-semibold tracking-tight">Reset your password</h1>
+      <h1 class="text-2xl font-semibold tracking-tight">Create a new password</h1>
       <p class="text-sm text-gray-500">
-        Enter your new password below.
+        Choose a secure password to continue using Kanbix.
       </p>
     </CardHeader>
     <CardContent>

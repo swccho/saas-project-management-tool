@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Workspace\CalendarController;
+use App\Http\Controllers\Api\Workspace\CreateDemoWorkspaceController;
 use App\Http\Controllers\Api\Workspace\DashboardController;
 use App\Http\Controllers\Api\Workspace\MyTasksController;
 use App\Http\Controllers\Api\Workspace\WorkspaceActivityController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\Api\Workspace\WorkspacePreferencesController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->group(function (): void {
+    Route::post('workspaces/demo', [CreateDemoWorkspaceController::class, 'store']);
     Route::apiResource('workspaces', WorkspaceController::class);
     Route::get('workspaces/{workspace}/members', [WorkspaceMemberController::class, 'index']);
     Route::put('workspaces/{workspace}/members/{member}/role', [WorkspaceMemberController::class, 'updateRole']);

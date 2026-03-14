@@ -1,1 +1,0 @@
-import{P as s,o,b as r,r as c}from"./main-D2-CXcBx.js";const t={},a={class:"flex flex-col space-y-1.5 p-6"};function n(e,l){return o(),r("div",a,[c(e.$slots,"default")])}const d=s(t,[["render",n]]);export{d as C};

@@ -158,7 +158,7 @@ async function deleteWorkspace() {
     await workspaceStore.deleteWorkspace(ws.id);
     showDeleteConfirm.value = false;
     deleteConfirmText.value = '';
-    router.push('/');
+    router.push('/app');
   } catch (e) {
     // Error shown via store or could add local state
   } finally {

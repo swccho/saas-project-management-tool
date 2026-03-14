@@ -3,7 +3,7 @@
     <div class="flex items-center justify-between">
       <h3 class="text-sm font-semibold text-gray-900">Recent Activity</h3>
       <router-link
-        to="/activity"
+        to="/app/activity"
         class="text-xs text-indigo-600 hover:underline"
       >
         View all
@@ -36,14 +36,14 @@
           <p class="text-xs text-gray-500">{{ formatTime(a.created_at) }}</p>
           <router-link
             v-if="a.meta?.task_id && a.meta?.project_id"
-            :to="`/projects/${a.meta.project_id}/board?task=${a.meta.task_id}`"
+            :to="`/app/projects/${a.meta.project_id}/board?task=${a.meta.task_id}`"
             class="mt-0.5 inline-block text-xs text-indigo-600 hover:underline"
           >
             View task
           </router-link>
           <router-link
             v-else-if="a.meta?.project_id"
-            :to="`/projects/${a.meta.project_id}`"
+            :to="`/app/projects/${a.meta.project_id}`"
             class="mt-0.5 inline-block text-xs text-indigo-600 hover:underline"
           >
             View project

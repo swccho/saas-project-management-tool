@@ -7,9 +7,10 @@
       ]"
     >
       <div class="flex h-14 items-center border-b border-gray-200 px-4">
-        <span v-if="!uiStore.sidebarCollapsed" class="text-lg font-semibold text-gray-900">
-          Kanbix
-        </span>
+        <div class="flex flex-col">
+          <span class="text-lg font-semibold text-gray-900">Kanbix</span>
+          <span v-if="!uiStore.sidebarCollapsed" class="text-xs text-gray-500">Project Management</span>
+        </div>
       </div>
       <nav class="flex-1 space-y-1 p-4">
         <WorkspaceSwitcher />
@@ -61,6 +62,9 @@
       <main class="min-h-0 min-w-0 flex-1 overflow-auto p-6">
         <router-view />
       </main>
+      <footer class="shrink-0 border-t border-gray-200 py-2 px-6 text-center text-xs text-gray-500">
+        © 2026 Kanbix · Built with Laravel + Vue
+      </footer>
     </div>
   </div>
 </template>
@@ -102,18 +106,18 @@ watch(() => useWorkspaceStore().activeWorkspaceId, () => {
 }, { immediate: false });
 
 const navItems = [
-  { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/activity', label: 'Activity', icon: Activity },
-  { path: '/projects', label: 'Projects', icon: FolderKanban },
-  { path: '/my-tasks', label: 'My Tasks', icon: ListTodo },
-  { path: '/calendar', label: 'Calendar', icon: Calendar },
-  { path: '/settings', label: 'Settings', icon: Settings },
+  { path: '/app', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/app/activity', label: 'Activity', icon: Activity },
+  { path: '/app/projects', label: 'Projects', icon: FolderKanban },
+  { path: '/app/my-tasks', label: 'My Tasks', icon: ListTodo },
+  { path: '/app/calendar', label: 'Calendar', icon: Calendar },
+  { path: '/app/settings', label: 'Settings', icon: Settings },
 ];
 
 function isNavItemActive(item) {
   const path = route.path;
-  if (item.path === '/') {
-    return path === '/';
+  if (item.path === '/app') {
+    return path === '/app' || path === '/app/';
   }
   return path === item.path || path.startsWith(item.path + '/');
 }

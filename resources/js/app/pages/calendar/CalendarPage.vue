@@ -163,7 +163,7 @@ function getTasksForDate(dateStr) {
 
 function openTask(task) {
   if (task.project?.id) {
-    router.push({ path: `/projects/${task.project.id}/board`, query: { task: task.id } });
+    router.push({ path: `/app/projects/${task.project.id}/board`, query: { task: task.id } });
   }
 }
 

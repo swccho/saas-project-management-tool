@@ -1,11 +1,11 @@
 <template>
   <Card class="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
     <CardHeader>
-      <h1 class="text-2xl font-semibold tracking-tight">Create an account</h1>
+      <h1 class="text-2xl font-semibold tracking-tight">Create your Kanbix account</h1>
       <p v-if="invitationPreview" class="text-sm text-gray-500">
         Join {{ invitationPreview.workspace_name }} – {{ invitationPreview.inviter_name }} invited you
       </p>
-      <p v-else class="text-sm text-gray-500">Enter your details to get started</p>
+      <p v-else class="text-sm text-gray-500">Start managing projects, tasks, and team workflows in one place.</p>
     </CardHeader>
     <CardContent>
       <form class="space-y-4" @submit.prevent="submit">
@@ -131,7 +131,7 @@ async function submit() {
       await workspaceStore.fetchWorkspaces();
       workspaceStore.setActive(data.workspace_id);
     }
-    router.push('/');
+    router.push('/app');
   } catch (err) {
     const res = err.response?.data;
     if (res?.errors) {

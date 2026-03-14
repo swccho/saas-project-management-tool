@@ -3,14 +3,14 @@
     <h3 class="text-sm font-semibold text-gray-900">Quick Actions</h3>
     <div class="flex flex-wrap gap-2">
       <router-link
-        :to="projectId ? `/projects/${projectId}/board` : '/projects'"
+        :to="projectId ? `/app/projects/${projectId}/board` : '/app/projects'"
         class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
       >
         <Plus class="h-4 w-4" />
         Add task
       </router-link>
       <router-link
-        to="/projects"
+        to="/app/projects"
         class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
         @click="emitCreateProject"
       >
@@ -18,14 +18,14 @@
         New project
       </router-link>
       <router-link
-        to="/my-tasks"
+        to="/app/my-tasks"
         class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
       >
         <ListTodo class="h-4 w-4" />
         My tasks
       </router-link>
       <router-link
-        to="/calendar"
+        to="/app/calendar"
         class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
       >
         <Calendar class="h-4 w-4" />

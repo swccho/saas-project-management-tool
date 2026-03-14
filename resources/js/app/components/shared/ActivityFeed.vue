@@ -21,7 +21,7 @@
           <p class="text-xs text-gray-500">{{ formatTime(a.created_at) }}</p>
           <router-link
             v-if="a.meta?.task_id && projectId"
-            :to="`/projects/${projectId}/board?task=${a.meta.task_id}`"
+            :to="`/app/projects/${projectId}/board?task=${a.meta.task_id}`"
             class="mt-1 inline-block text-xs text-indigo-600 hover:underline"
           >
             View task

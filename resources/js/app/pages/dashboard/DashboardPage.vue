@@ -3,10 +3,28 @@
     <h1 class="text-2xl font-semibold tracking-tight">Dashboard</h1>
 
     <EmptyState
-      v-if="!workspaceStore.activeWorkspaceId"
+      v-if="!workspaceStore.activeWorkspaceId && workspaceStore.workspaces.length > 0"
       title="Select a workspace"
       description="Choose a workspace from the sidebar to view your dashboard."
     />
+    <EmptyState
+      v-else-if="!workspaceStore.activeWorkspaceId && workspaceStore.workspaces.length === 0"
+      title="Get started"
+      description="Load sample projects and tasks to explore Kanbix, or create your own workspace."
+    >
+      <div class="flex flex-col items-center gap-3">
+        <button
+          type="button"
+          class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+          :disabled="loadingDemo"
+          @click="handleLoadDemo"
+        >
+          <span v-if="loadingDemo">Loading…</span>
+          <span v-else>Load Demo Data</span>
+        </button>
+        <p class="text-xs text-gray-500">Or create a workspace from the sidebar.</p>
+      </div>
+    </EmptyState>
 
     <template v-else>
       <div v-if="loading" class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -14,7 +32,7 @@
       </div>
       <div v-else class="space-y-6">
         <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <router-link to="/projects" class="block transition-colors hover:opacity-90">
+          <router-link to="/app/projects" class="block transition-colors hover:opacity-90">
             <Card class="h-full border-gray-200 transition-colors hover:border-indigo-200 hover:bg-indigo-50/30">
               <CardContent class="pt-6">
                 <div class="flex items-center gap-3">
@@ -29,7 +47,7 @@
               </CardContent>
             </Card>
           </router-link>
-          <router-link to="/my-tasks" class="block transition-colors hover:opacity-90">
+          <router-link to="/app/my-tasks" class="block transition-colors hover:opacity-90">
             <Card class="h-full border-gray-200 transition-colors hover:border-indigo-200 hover:bg-indigo-50/30">
               <CardContent class="pt-6">
                 <div class="flex items-center gap-3">
@@ -44,7 +62,7 @@
               </CardContent>
             </Card>
           </router-link>
-          <router-link to="/my-tasks?view=overdue" class="block transition-colors hover:opacity-90">
+          <router-link to="/app/my-tasks?view=overdue" class="block transition-colors hover:opacity-90">
             <Card class="h-full border-gray-200 transition-colors hover:border-indigo-200 hover:bg-indigo-50/30">
               <CardContent class="pt-6">
                 <div class="flex items-center gap-3">
@@ -61,7 +79,7 @@
               </CardContent>
             </Card>
           </router-link>
-          <router-link to="/my-tasks?view=due_week" class="block transition-colors hover:opacity-90">
+          <router-link to="/app/my-tasks?view=due_week" class="block transition-colors hover:opacity-90">
             <Card class="h-full border-gray-200 transition-colors hover:border-indigo-200 hover:bg-indigo-50/30">
               <CardContent class="pt-6">
                 <div class="flex items-center gap-3">
@@ -97,7 +115,7 @@
               <div class="flex items-center justify-between">
                 <h2 class="text-lg font-semibold">Favorites</h2>
                 <router-link
-                  to="/projects"
+                  to="/app/projects"
                   class="text-sm font-medium text-indigo-600 hover:underline"
                 >
                   View all
@@ -109,7 +127,7 @@
                 <router-link
                   v-for="p in dashboard?.favorite_projects"
                   :key="p.id"
-                  :to="`/projects/${p.id}`"
+                  :to="`/app/projects/${p.id}`"
                   class="flex items-center gap-3 rounded-lg border border-gray-100 px-3 py-2 text-sm hover:bg-gray-50"
                 >
                   <span
@@ -128,7 +146,7 @@
               <div class="flex items-center justify-between">
                 <h2 class="text-lg font-semibold">Active Projects</h2>
                 <router-link
-                  to="/projects"
+                  to="/app/projects"
                   class="text-sm font-medium text-indigo-600 hover:underline"
                 >
                   View all
@@ -146,7 +164,7 @@
                 compact
               >
                 <router-link
-                  to="/projects"
+                  to="/app/projects"
                   class="text-sm font-medium text-indigo-600 hover:underline"
                 >
                   Create project
@@ -156,7 +174,7 @@
                 <router-link
                   v-for="p in dashboard?.active_projects"
                   :key="p.id"
-                  :to="`/projects/${p.id}`"
+                  :to="`/app/projects/${p.id}`"
                   class="flex items-center gap-3 rounded-lg border border-gray-100 px-3 py-2 text-sm hover:bg-gray-50"
                 >
                   <span
@@ -197,8 +215,21 @@ import EmptyState from '../../components/shared/EmptyState.vue';
 const workspaceStore = useWorkspaceStore();
 const dashboard = ref(null);
 const loading = ref(false);
+const loadingDemo = ref(false);
 
 const firstProjectId = computed(() => dashboard.value?.active_projects?.[0]?.id ?? null);
+
+async function handleLoadDemo() {
+  loadingDemo.value = true;
+  try {
+    await workspaceStore.loadDemoData();
+    await fetchDashboard();
+  } catch (err) {
+    console.error('Failed to load demo data', err);
+  } finally {
+    loadingDemo.value = false;
+  }
+}
 
 async function fetchDashboard() {
   const wid = workspaceStore.activeWorkspaceId;

@@ -5,6 +5,12 @@ import AuthLayout from '../layouts/AuthLayout.vue';
 
 const routes = [
   {
+    path: '/',
+    name: 'landing',
+    component: () => import('../landing/pages/LandingPage.vue'),
+    meta: { public: true },
+  },
+  {
     path: '/login',
     component: AuthLayout,
     meta: { guest: true },
@@ -47,7 +53,7 @@ const routes = [
     component: () => import('../pages/GuidePage.vue'),
   },
   {
-    path: '/',
+    path: '/app',
     component: AppLayout,
     meta: { requiresAuth: true },
     children: [
@@ -117,6 +123,8 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next({ name: 'login', query: { redirect: to.fullPath } });
   } else if (to.meta.guest && authStore.isAuthenticated) {
+    next({ name: 'dashboard' });
+  } else if (to.name === 'landing' && authStore.isAuthenticated) {
     next({ name: 'dashboard' });
   } else {
     next();

@@ -1,6 +1,30 @@
-# SaaS Project Management Platform
+# Kanbix
 
-A modern **team collaboration and project management platform**
+Kanbix is a modern SaaS project management platform built with Laravel and Vue. It helps teams plan work, track tasks, collaborate efficiently, and manage projects through a clean Kanban-based workflow.
+
+## Key Features
+
+- Workspace management
+- Project and board management
+- Kanban workflows
+- Task tracking with labels and subtasks
+- Comments and collaboration
+- Notifications
+- Dashboard and analytics
+- Team invitations
+- Workspace settings
+
+## Tech Stack
+
+Laravel · Vue · MySQL · Tailwind CSS · Pinia · Sanctum
+
+---
+
+## GitHub Repository Description
+
+For portfolio visibility, set the repository description in GitHub (Settings → Description) to:
+
+> Kanbix is a modern SaaS project management platform built with Laravel and Vue. It includes Kanban boards, tasks, collaboration tools, notifications, and workspace management.
 
 ---
 
@@ -55,13 +79,13 @@ A modern **team collaboration and project management platform**
    ```bash
    php artisan db:seed
    ```
-   Or set `SEED_DEMO=true` in `.env` to always seed demo data. Demo includes 2 workspaces, 6 projects, tasks, comments, and notifications.
+   Or set `SEED_DEMO=true` in `.env` to always seed demo data. Demo includes the Kanbix Demo workspace with sample projects, boards, tasks, and more.
 
 ---
 
 # Portfolio Summary
 
-A production-ready **SaaS Project Management Platform** that helps teams organize projects, manage tasks, and collaborate efficiently.
+A production-ready **Kanbix** project management platform that helps teams organize projects, manage tasks, and collaborate efficiently.
 
 The system allows teams to create **workspaces**, manage **projects**, organize work using **Kanban boards**, assign **tasks**, communicate through **comments**, and track activity across the entire team.
 

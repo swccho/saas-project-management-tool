@@ -42,6 +42,16 @@ export const useWorkspaceStore = defineStore('workspace', {
       return workspace;
     },
 
+    async loadDemoData() {
+      const workspace = await workspaceService.createDemo();
+      const exists = this.workspaces.some((w) => w.id === workspace.id);
+      if (!exists) {
+        this.workspaces.push(workspace);
+      }
+      this.setActive(workspace.id);
+      return workspace;
+    },
+
     async updateWorkspace(id, payload) {
       const workspace = await workspaceService.update(id, payload);
       const idx = this.workspaces.findIndex((w) => w.id === id);
