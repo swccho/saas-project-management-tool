@@ -39,9 +39,9 @@ Sign in at the link above to open the **Kanbix Demo** workspace with sample proj
 |-------------|----------|
 | [![Board](screenshots/board.png)](screenshots/board.png) | [![Calendar](screenshots/calendar.png)](screenshots/calendar.png) |
 
-| Task detail / modal | Settings |
-|---------------------|----------|
-| [![Task modal](screenshots/task-modal.png)](screenshots/task-modal.png) | [![Settings](screenshots/settings.png)](screenshots/settings.png) |
+| Task details | Settings |
+|--------------|----------|
+| [![Task details](screenshots/task-details.png)](screenshots/task-details.png) | [![Settings](screenshots/settings.png)](screenshots/settings.png) |
 
 ---
 
