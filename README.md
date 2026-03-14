@@ -33,15 +33,15 @@ Sign in at the link above to open the **Kanbix Demo** workspace with sample proj
 
 | Landing | Dashboard |
 |---------|-----------|
-| [![Landing](screenshots/landing.png)](screenshots/landing.png) | [![Dashboard](screenshots/dashboard.png)](screenshots/dashboard.png) |
+| [![Landing](screenshots/landing-1.png)](screenshots/landing-1.png) | [![Dashboard](screenshots/dashboard-1.png)](screenshots/dashboard-1.png) |
 
 | Board view | Calendar |
 |-------------|----------|
-| [![Board](screenshots/board.png)](screenshots/board.png) | [![Calendar](screenshots/calendar.png)](screenshots/calendar.png) |
+| [![Board](screenshots/board-1.png)](screenshots/board-1.png) | [![Calendar](screenshots/calendar-1.png)](screenshots/calendar-1.png) |
 
 | Task details | Settings |
 |--------------|----------|
-| [![Task details](screenshots/task-details.png)](screenshots/task-details.png) | [![Settings](screenshots/settings.png)](screenshots/settings.png) |
+| [![Task details](screenshots/task-details-1.png)](screenshots/task-details-1.png) | [![Settings](screenshots/settings-1.png)](screenshots/settings-1.png) |
 
 ---
 
