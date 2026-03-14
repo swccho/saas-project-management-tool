@@ -2,17 +2,18 @@
   <div ref="rootRef" class="relative">
     <button
       type="button"
-      class="flex items-center gap-1.5 rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm hover:bg-gray-50"
+      class="flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-sm text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
       @click="open = !open"
     >
+      <LayoutGrid class="h-4 w-4 text-gray-400" />
       <span>Views</span>
-      <span v-if="savedViews.length > 0" class="rounded bg-gray-200 px-1.5 py-0.5 text-xs">
+      <span v-if="savedViews.length > 0" class="rounded-full bg-gray-200 px-1.5 py-0.5 text-xs font-medium text-gray-700">
         {{ savedViews.length }}
       </span>
     </button>
     <div
       v-if="open"
-      class="absolute left-0 top-full z-50 mt-1 min-w-[200px] rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+      class="absolute left-0 top-full z-50 mt-1.5 min-w-[220px] rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
     >
       <div v-if="savedViews.length === 0" class="px-3 py-4 text-center text-sm text-gray-500">
         No saved views. Save your current filters as a view.
@@ -72,6 +73,7 @@
 
 <script setup>
 import { ref, nextTick, onMounted, onUnmounted } from 'vue';
+import { LayoutGrid } from 'lucide-vue-next';
 
 const props = defineProps({
   savedViews: { type: Array, default: () => [] },

@@ -30,7 +30,7 @@
         :key="a.id"
         class="flex gap-3"
       >
-        <Avatar :name="a.actor?.name" :status="presenceStatus(a.actor?.id)" size="sm" />
+        <Avatar :name="a.actor?.name" :src="a.actor?.avatar_url" :status="presenceStatus(a.actor?.id)" size="sm" />
         <div class="min-w-0 flex-1">
           <p class="text-sm text-gray-900">{{ a.message }}</p>
           <p class="text-xs text-gray-500">{{ formatTime(a.created_at) }}</p>

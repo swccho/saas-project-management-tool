@@ -21,6 +21,9 @@ class ProjectMemberResource extends JsonResource
                 'id' => $this->user->id,
                 'name' => $this->user->name,
                 'email' => $this->user->email,
+                'avatar_url' => $this->user->avatar
+                    ? app(\App\Services\ProfileService::class)->getAvatarUrl($this->user)
+                    : null,
             ]),
             'created_at' => $this->created_at->toIso8601String(),
             'updated_at' => $this->updated_at->toIso8601String(),

@@ -11,8 +11,9 @@ const pinia = createPinia();
 app.use(pinia);
 app.use(router);
 
-router.isReady().then(async () => {
-  const authStore = useAuthStore();
-  await authStore.init();
-  app.mount('#app');
-});
+const authStore = useAuthStore();
+if (authStore.token) {
+  authStore.init();
+}
+
+app.mount('#app');

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Activity;
+use App\Services\ProfileService;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
@@ -46,10 +47,10 @@ class DashboardService
             ->get(['id', 'name', 'key', 'color']);
 
         $favoriteProjects = $user->favoriteProjects()
-            ->where('workspace_id', $workspace->id)
-            ->where('status', Project::STATUS_ACTIVE)
-            ->orderBy('name')
-            ->get(['id', 'name', 'key', 'color']);
+            ->where('projects.workspace_id', $workspace->id)
+            ->where('projects.status', Project::STATUS_ACTIVE)
+            ->orderBy('projects.name')
+            ->get(['projects.id', 'projects.name', 'projects.key', 'projects.color']);
 
         return [
             'projects_count' => $workspace->projects()->where('status', Project::STATUS_ACTIVE)->count(),
@@ -98,16 +99,21 @@ class DashboardService
             ->take($limit)
             ->values();
 
+        $profileService = app(ProfileService::class);
+
         return $merged->map(fn ($a) => [
             'id' => $a->id,
             'action' => $a->action,
             'actor' => $a->actor ? [
                 'id' => $a->actor->id,
                 'name' => $a->actor->name,
+                'avatar_url' => $a->actor->avatar ? $profileService->getAvatarUrl($a->actor) : null,
             ] : null,
             'target_type' => $a->target_type,
             'target_id' => $a->target_id,
-            'meta' => $a->meta,
+            'meta' => array_merge($a->meta ?? [], [
+                'project_id' => $a->subject_type === Project::class ? $a->subject_id : ($a->meta['project_id'] ?? null),
+            ]),
             'message' => $this->formatMessage($a),
             'created_at' => $a->created_at->toIso8601String(),
         ])->toArray();

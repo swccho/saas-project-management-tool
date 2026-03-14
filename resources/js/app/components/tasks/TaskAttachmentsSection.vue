@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-3">
-    <h4 class="text-sm font-medium text-gray-700">Attachments</h4>
+    <h4 class="text-xs font-medium uppercase tracking-wider text-gray-500">Attachments</h4>
     <div v-if="loading" class="flex justify-center py-4">
       <div class="h-6 w-6 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
     </div>
@@ -19,7 +19,7 @@
         <div
           v-for="a in attachments"
           :key="a.id"
-          class="flex items-center justify-between gap-2 rounded-lg border border-gray-100 bg-gray-50/50 p-2"
+          class="flex items-center justify-between gap-2 rounded-lg bg-white p-3 shadow-sm transition-colors hover:shadow"
         >
           <button
             type="button"
@@ -49,6 +49,21 @@
         class="hidden"
         @change="handleFileSelect"
       />
+      <ConfirmModal
+        v-model="showDeleteAttachmentModal"
+        title="Delete attachment"
+        :message="attachmentToDelete ? `Delete '${attachmentToDelete.original_name}'?` : ''"
+        confirm-label="Delete"
+        confirm-variant="destructive"
+        @confirm="doDeleteAttachment"
+      />
+      <ConfirmModal
+        v-model="showFileSizeAlert"
+        title="File too large"
+        message="File must not exceed 10MB."
+        confirm-label="OK"
+        alert-only
+      />
       <div v-if="attachments.length > 0" class="flex items-center gap-2">
         <Button size="sm" variant="secondary" @click="fileInputRef?.click()">
           Upload file
@@ -63,6 +78,7 @@
 import { ref } from 'vue';
 import { FileIcon, Paperclip, Trash2 } from 'lucide-vue-next';
 import Button from '../ui/Button.vue';
+import ConfirmModal from '../ui/ConfirmModal.vue';
 import EmptyState from '../shared/EmptyState.vue';
 
 const props = defineProps({
@@ -74,6 +90,9 @@ const props = defineProps({
 });
 
 const fileInputRef = ref(null);
+const showDeleteAttachmentModal = ref(false);
+const attachmentToDelete = ref(null);
+const showFileSizeAlert = ref(false);
 
 function formatSize(bytes) {
   if (!bytes) return '0 B';
@@ -93,7 +112,8 @@ function handleFileSelect(e) {
   const file = e.target.files?.[0];
   if (!file || !props.uploadAttachment) return;
   if (file.size > 10 * 1024 * 1024) {
-    alert('File must not exceed 10MB');
+    showFileSizeAlert.value = true;
+    e.target.value = '';
     return;
   }
   props.uploadAttachment(file);
@@ -101,7 +121,13 @@ function handleFileSelect(e) {
 }
 
 function confirmDelete(a) {
-  if (!confirm(`Delete "${a.original_name}"?`)) return;
-  props.deleteAttachment?.(a.id);
+  attachmentToDelete.value = a;
+  showDeleteAttachmentModal.value = true;
+}
+
+function doDeleteAttachment() {
+  const a = attachmentToDelete.value;
+  if (a) props.deleteAttachment?.(a.id);
+  attachmentToDelete.value = null;
 }
 </script>

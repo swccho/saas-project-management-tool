@@ -9,3 +9,16 @@
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+html, body {
+    overflow-x: hidden;
+}
+
+/* Ghost (dragged task) hidden until hovering over a column */
+.task-drag-ghost {
+    display: none !important;
+}
+body.drag-over-column .task-drag-ghost {
+    display: block !important;
+    opacity: 0.5;
+}

@@ -21,6 +21,11 @@ const routes = [
     component: () => import('../pages/invitations/InvitationAcceptPage.vue'),
   },
   {
+    path: '/guide',
+    name: 'guide',
+    component: () => import('../pages/GuidePage.vue'),
+  },
+  {
     path: '/',
     component: AppLayout,
     meta: { requiresAuth: true },
@@ -30,28 +35,34 @@ const routes = [
       { path: 'projects', name: 'projects', component: () => import('../pages/projects/ProjectsPage.vue') },
       {
         path: 'projects/:id',
-        name: 'project-detail',
-        component: () => import('../pages/projects/ProjectDetailPage.vue'),
-      },
-      {
-        path: 'projects/:id/members',
-        name: 'project-members',
-        component: () => import('../pages/projects/ProjectMembersPage.vue'),
-      },
-      {
-        path: 'projects/:id/board',
-        name: 'project-board',
-        component: () => import('../pages/projects/ProjectBoardPage.vue'),
-      },
-      {
-        path: 'projects/:id/activity',
-        name: 'project-activity',
-        component: () => import('../pages/activities/ProjectActivityPage.vue'),
-      },
-      {
-        path: 'projects/:id/settings',
-        name: 'project-settings',
-        component: () => import('../pages/projects/ProjectSettingsPage.vue'),
+        component: () => import('../layouts/ProjectLayout.vue'),
+        children: [
+          {
+            path: '',
+            name: 'project-detail',
+            component: () => import('../pages/projects/ProjectDetailPage.vue'),
+          },
+          {
+            path: 'members',
+            name: 'project-members',
+            component: () => import('../pages/projects/ProjectMembersPage.vue'),
+          },
+          {
+            path: 'board',
+            name: 'project-board',
+            component: () => import('../pages/projects/ProjectBoardPage.vue'),
+          },
+          {
+            path: 'activity',
+            name: 'project-activity',
+            component: () => import('../pages/activities/ProjectActivityPage.vue'),
+          },
+          {
+            path: 'settings',
+            name: 'project-settings',
+            component: () => import('../pages/projects/ProjectSettingsPage.vue'),
+          },
+        ],
       },
       { path: 'my-tasks', name: 'my-tasks', component: () => import('../pages/tasks/MyTasksPage.vue') },
       { path: 'calendar', name: 'calendar', component: () => import('../pages/calendar/CalendarPage.vue') },
@@ -80,11 +91,8 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
-  if (!authStore.user && authStore.token) {
-    await authStore.init();
-  }
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next({ name: 'login', query: { redirect: to.fullPath } });
   } else if (to.meta.guest && authStore.isAuthenticated) {

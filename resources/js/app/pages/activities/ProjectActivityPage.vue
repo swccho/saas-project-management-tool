@@ -1,14 +1,5 @@
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <h1 class="text-xl font-semibold text-gray-900">Project Activity</h1>
-      <router-link
-        :to="projectId ? `/projects/${projectId}` : '/projects'"
-        class="text-sm text-indigo-600 hover:underline"
-      >
-        ← Back to project
-      </router-link>
-    </div>
     <ActivityFeed
       :activities="activities"
       :loading="loading"

@@ -27,7 +27,7 @@
           class="flex items-center justify-between py-3"
         >
           <div class="flex items-center gap-3">
-            <Avatar :name="m.user?.name" size="sm" />
+            <Avatar :name="m.user?.name" :src="m.user?.avatar_url" size="sm" />
             <div>
               <p class="text-sm font-medium text-gray-900">{{ m.user?.name }}</p>
               <p class="text-xs text-gray-500">{{ m.user?.email }}</p>
@@ -68,7 +68,7 @@
                 class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-50 disabled:opacity-50"
                 @click="addMember(wm)"
               >
-                <Avatar :name="wm.user?.name" size="sm" />
+                <Avatar :name="wm.user?.name" :src="wm.user?.avatar_url" size="sm" />
                 <span>{{ wm.user?.name }}</span>
                 <span class="text-gray-500">({{ wm.user?.email }})</span>
               </button>

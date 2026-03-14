@@ -1,233 +1,279 @@
 <template>
   <Teleport v-if="modelValue" to="body">
     <div
-      class="fixed inset-0 z-50"
+      class="fixed inset-0 z-50 flex justify-end"
       @click.self="$emit('update:modelValue', false)"
     >
-      <div class="fixed inset-0 bg-black/50" />
+      <div class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" />
       <div
-        class="fixed inset-0 overflow-y-auto bg-white shadow-xl sm:inset-y-0 sm:right-0 sm:left-auto sm:w-full sm:max-w-md"
+        class="relative flex h-full w-full max-h-full flex-col bg-white shadow-2xl transition-transform sm:w-full sm:max-w-lg"
         role="dialog"
+        aria-labelledby="task-details-title"
       >
-        <div v-if="loading" class="flex h-full items-center justify-center p-8">
+        <div v-if="loading" class="flex flex-1 items-center justify-center p-12">
           <div class="h-8 w-8 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
         </div>
         <template v-else-if="task">
-          <div class="sticky top-0 flex items-center justify-between border-b border-gray-200 bg-white p-4">
-            <h2 class="text-lg font-semibold">Task details</h2>
-            <button
-              type="button"
-              class="rounded p-1 hover:bg-gray-100"
-              @click="$emit('update:modelValue', false)"
-            >
-              ×
-            </button>
-          </div>
-          <div class="space-y-6 p-6">
-            <div class="flex items-start justify-between gap-4">
-              <div>
-                <h3 class="text-xl font-semibold text-gray-900">{{ task.title }}</h3>
-                <p class="mt-1 text-sm text-gray-500">#{{ task.task_number }}</p>
-              </div>
+          <!-- Header -->
+          <div class="flex shrink-0 items-center justify-between border-b border-gray-100 bg-white px-6 py-4">
+            <h2 id="task-details-title" class="text-sm font-medium text-gray-500">Task details</h2>
+            <div class="flex items-center gap-2">
               <button
                 v-if="props.setWatch && props.unsetWatch"
                 type="button"
-                class="shrink-0 rounded px-2 py-1 text-sm"
-                :class="task.is_watching ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                class="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
+                :class="task.is_watching && 'border-indigo-200 bg-indigo-50 text-indigo-700'"
                 @click="toggleWatch"
               >
-                {{ task.is_watching ? 'Unwatch' : 'Watch' }}
-                <span v-if="task.watchers_count > 0" class="ml-1 text-xs">({{ task.watchers_count }})</span>
+                <Eye v-if="task.is_watching" class="h-4 w-4" />
+                <EyeOff v-else class="h-4 w-4" />
+                {{ task.is_watching ? 'Watching' : 'Watch' }}
+                <span v-if="task.watchers_count > 0" class="rounded-full bg-gray-200 px-1.5 py-0.5 text-xs">{{ task.watchers_count }}</span>
+              </button>
+              <button
+                type="button"
+                class="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                aria-label="Close"
+                @click="$emit('update:modelValue', false)"
+              >
+                <X class="h-5 w-5" />
               </button>
             </div>
-            <div v-if="task.description">
-              <h4 class="text-sm font-medium text-gray-700">Description</h4>
-              <p class="mt-1 text-sm text-gray-600 whitespace-pre-wrap">{{ task.description }}</p>
-            </div>
-            <div class="space-y-2">
-              <div v-if="showAssigneeSelector">
-                <AssigneeSelector
-                  :model-value="task.assigned_to"
-                  :members="projectMembers"
-                  @update:model-value="updateAssignee"
-                />
-              </div>
-              <div v-else class="flex flex-wrap items-center gap-2">
-                <span class="text-xs text-gray-500">Assignee:</span>
-                <template v-if="task.assignee">
-                  <Avatar :name="task.assignee?.name" :status="presenceStatus(task.assignee?.id)" size="sm" />
-                  <span class="text-sm">{{ task.assignee?.name }}</span>
-                </template>
-                <button
-                  type="button"
-                  class="text-sm text-indigo-600 hover:underline"
-                  @click="showAssigneeSelector = true"
-                >
-                  {{ task.assignee ? 'Change' : '+ Assign' }}
-                </button>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500">Due:</span>
-                <input
-                  v-if="editingMeta === 'due_date'"
-                  v-model="metaDueDate"
-                  type="date"
-                  class="rounded border px-2 py-1 text-sm"
-                  @blur="saveMeta"
-                  @keydown.enter="saveMeta"
-                />
-                <template v-else>
-                  <span v-if="task.due_date" class="text-sm">{{ formatDate(task.due_date) }}</span>
-                  <button
-                    type="button"
-                    class="text-sm text-indigo-600 hover:underline"
-                    @click="startEditMeta('due_date')"
-                  >
-                    {{ task.due_date ? 'Change' : '+ Set due date' }}
-                  </button>
-                </template>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500">Priority:</span>
-                <select
-                  v-if="editingMeta === 'priority'"
-                  v-model="metaPriority"
-                  class="rounded border px-2 py-1 text-sm"
-                  @change="saveMeta"
-                >
-                  <option value="">None</option>
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="urgent">Urgent</option>
-                </select>
-                <template v-else>
-                  <span v-if="task.priority" class="text-sm capitalize">{{ task.priority }}</span>
-                  <button
-                    type="button"
-                    class="text-sm text-indigo-600 hover:underline"
-                    @click="startEditMeta('priority')"
-                  >
-                    {{ task.priority ? 'Change' : '+ Set priority' }}
-                  </button>
-                </template>
-              </div>
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="w-full text-xs text-gray-500">Labels:</span>
-                <span
-                  v-for="l in (task.labels ?? [])"
-                  :key="l.id"
-                  class="rounded px-2 py-0.5 text-xs"
-                  :style="{ backgroundColor: (l.color || '#6366F1') + '20', color: l.color || '#6366F1' }"
-                >
-                  {{ l.name }}
+          </div>
+
+          <!-- Scrollable content -->
+          <div class="flex-1 overflow-y-auto">
+            <div class="space-y-6 p-6">
+              <!-- Task title hero -->
+              <div class="space-y-1">
+                <h3 class="text-xl font-semibold tracking-tight text-gray-900">{{ task.title }}</h3>
+                <span class="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                  #{{ task.task_number }}
                 </span>
-                <select
-                  v-if="labels.length > 0"
-                  class="rounded border px-2 py-1 text-sm"
-                  @change="addLabel($event.target.value)"
-                >
-                  <option value="">+ Add label</option>
-                  <option
-                    v-for="l in labels.filter((x) => !(task.labels ?? []).some((t) => t.id === x.id))"
-                    :key="l.id"
-                    :value="l.id"
-                  >
-                    {{ l.name }}
-                  </option>
-                </select>
               </div>
-              <div class="space-y-2">
-                <h4 class="text-sm font-medium text-gray-700">Subtasks</h4>
-                <div v-if="(task.subtasks ?? []).length > 0" class="space-y-1">
+
+              <!-- Metadata grid -->
+              <div class="grid gap-3 sm:grid-cols-2">
+                <!-- Assignee -->
+                <div class="rounded-xl border border-gray-100 bg-gray-50/50 p-4">
+                  <div v-if="showAssigneeSelector">
+                    <AssigneeSelector
+                      :model-value="task.assigned_to"
+                      :members="projectMembers"
+                      @update:model-value="updateAssignee"
+                    />
+                  </div>
+                  <div v-else class="flex items-center gap-3">
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white shadow-sm">
+                      <User class="h-4 w-4 text-gray-500" />
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-xs font-medium text-gray-500">Assignee</p>
+                      <div class="mt-0.5 flex items-center gap-2">
+                        <template v-if="task.assignee">
+                          <Avatar :name="task.assignee?.name" :src="task.assignee?.avatar_url" :status="presenceStatus(task.assignee?.id)" size="sm" />
+                          <span class="truncate text-sm font-medium text-gray-900">{{ task.assignee?.name }}</span>
+                        </template>
+                        <button
+                          type="button"
+                          class="text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                          @click="showAssigneeSelector = true"
+                        >
+                          {{ task.assignee ? 'Change' : 'Assign' }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Due date -->
+                <div class="rounded-xl border border-gray-100 bg-gray-50/50 p-4">
+                  <div class="flex items-center gap-3">
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white shadow-sm">
+                      <Calendar class="h-4 w-4 text-gray-500" />
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-xs font-medium text-gray-500">Due date</p>
+                      <div class="mt-0.5">
+                        <input
+                          v-if="editingMeta === 'due_date'"
+                          v-model="metaDueDate"
+                          type="date"
+                          class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                          @blur="saveMeta"
+                          @keydown.enter="saveMeta"
+                        />
+                        <button
+                          v-else
+                          type="button"
+                          class="text-left text-sm font-medium"
+                          :class="task.due_date ? 'text-gray-900' : 'text-indigo-600 hover:text-indigo-700'"
+                          @click="startEditMeta('due_date')"
+                        >
+                          {{ task.due_date ? formatDate(task.due_date) : 'Set due date' }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Priority -->
+                <div class="rounded-xl border border-gray-100 bg-gray-50/50 p-4">
+                  <div class="flex items-center gap-3">
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white shadow-sm">
+                      <Flag class="h-4 w-4 text-gray-500" />
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-xs font-medium text-gray-500">Priority</p>
+                      <div class="mt-0.5">
+                        <select
+                          v-if="editingMeta === 'priority'"
+                          v-model="metaPriority"
+                          class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                          @change="saveMeta"
+                        >
+                          <option value="">None</option>
+                          <option value="low">Low</option>
+                          <option value="medium">Medium</option>
+                          <option value="high">High</option>
+                          <option value="urgent">Urgent</option>
+                        </select>
+                        <button
+                          v-else
+                          type="button"
+                          class="text-left text-sm font-medium"
+                          :class="task.priority ? 'text-gray-900' : 'text-indigo-600 hover:text-indigo-700'"
+                          @click="startEditMeta('priority')"
+                        >
+                          {{ task.priority ? task.priority.charAt(0).toUpperCase() + task.priority.slice(1) : 'Set priority' }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Labels -->
+              <div class="rounded-xl border border-gray-100 bg-gray-50/50 p-4">
+                <div class="flex items-start gap-3">
+                  <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white shadow-sm">
+                    <Tag class="h-4 w-4 text-gray-500" />
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-xs font-medium text-gray-500">Labels</p>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                      <span
+                        v-for="l in (task.labels ?? [])"
+                        :key="l.id"
+                        class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium"
+                        :style="{ backgroundColor: (l.color || '#6366F1') + '20', color: l.color || '#6366F1' }"
+                      >
+                        {{ l.name }}
+                      </span>
+                      <select
+                        v-if="labels.length > 0"
+                        class="rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm text-gray-600 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        @change="addLabel($event.target.value)"
+                      >
+                        <option value="">+ Add label</option>
+                        <option
+                          v-for="l in labels.filter((x) => !(task.labels ?? []).some((t) => t.id === x.id))"
+                          :key="l.id"
+                          :value="l.id"
+                        >
+                          {{ l.name }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Description -->
+              <div v-if="task.description" class="rounded-xl border border-gray-100 bg-gray-50/50 p-4">
+                <h4 class="text-xs font-medium uppercase tracking-wider text-gray-500">Description</h4>
+                <p class="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-gray-700">{{ task.description }}</p>
+              </div>
+
+              <!-- Subtasks -->
+              <div class="rounded-xl border border-gray-100 bg-gray-50/50 p-4">
+                <h4 class="text-xs font-medium uppercase tracking-wider text-gray-500">Subtasks</h4>
+                <div v-if="(task.subtasks ?? []).length > 0" class="mt-3 space-y-2">
                   <div
                     v-for="s in task.subtasks"
                     :key="s.id"
-                    class="flex items-center gap-2"
+                    class="flex items-center gap-3 rounded-lg bg-white px-3 py-2 shadow-sm transition-colors hover:bg-gray-50"
                   >
                     <input
                       type="checkbox"
                       :checked="s.is_completed"
+                      class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                       @change="toggleSubtask(s)"
                     />
                     <span
-                      :class="['text-sm', s.is_completed && 'line-through text-gray-500']"
+                      :class="['flex-1 text-sm', s.is_completed && 'text-gray-500 line-through']"
                     >
                       {{ s.title }}
                     </span>
                   </div>
                 </div>
-                <form class="flex gap-2" @submit.prevent="addSubtask">
+                <form class="mt-3 flex gap-2" @submit.prevent="addSubtask">
                   <input
                     v-model="newSubtaskTitle"
                     type="text"
                     placeholder="Add subtask..."
-                    class="flex-1 rounded border px-2 py-1 text-sm"
+                    class="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
                   <Button size="sm" type="submit">Add</Button>
                 </form>
               </div>
-              <TaskAttachmentsSection
-                :attachments="attachments"
-                :loading="attachmentsLoading"
-                :upload-attachment="uploadAttachment"
-                :delete-attachment="deleteAttachment"
-                :download-attachment="downloadAttachment"
-              />
-              <TaskCommentsSection
-                :comments="comments"
-                :loading="commentsLoading"
-                :members="projectMembers"
-                :add-comment="addComment"
-                :update-comment="updateComment"
-                :delete-comment="deleteComment"
-              />
-              <div v-if="activities.length > 0" class="space-y-2">
-                <h4 class="text-sm font-medium text-gray-700">Activity</h4>
-                <div class="space-y-6">
+
+              <!-- Attachments -->
+              <div class="rounded-xl border border-gray-100 bg-gray-50/50 p-4">
+                <TaskAttachmentsSection
+                  :attachments="attachments"
+                  :loading="attachmentsLoading"
+                  :upload-attachment="uploadAttachment"
+                  :delete-attachment="deleteAttachment"
+                  :download-attachment="downloadAttachment"
+                />
+              </div>
+
+              <!-- Comments -->
+              <div class="rounded-xl border border-gray-100 bg-gray-50/50 p-4">
+                <TaskCommentsSection
+                  :comments="comments"
+                  :loading="commentsLoading"
+                  :members="projectMembers"
+                  :add-comment="addComment"
+                  :update-comment="updateComment"
+                  :delete-comment="deleteComment"
+                />
+              </div>
+
+              <!-- Activity -->
+              <div class="rounded-xl border border-gray-100 bg-gray-50/50 p-4">
+                <h4 class="text-xs font-medium uppercase tracking-wider text-gray-500">Activity</h4>
+                <div v-if="activities.length > 0" class="mt-3 space-y-4">
                   <div
                     v-for="a in activities"
                     :key="a.id"
                     class="flex gap-3"
                   >
-                    <Avatar :name="a.user?.name" :status="presenceStatus(a.user?.id)" size="sm" />
-                    <div class="flex-1 space-y-0.5">
+                    <Avatar :name="a.user?.name" :status="presenceStatus(a.user?.id)" size="sm" class="shrink-0" />
+                    <div class="min-w-0 flex-1">
                       <p class="text-sm text-gray-900">{{ a.message }}</p>
-                      <p class="text-xs text-gray-500">{{ formatActivityTime(a.created_at) }}</p>
+                      <p class="mt-0.5 text-xs text-gray-500">{{ formatActivityTime(a.created_at) }}</p>
                     </div>
                   </div>
                 </div>
-              </div>
-              <EmptyState
-                v-else
-                title="No activity yet"
-                :compact="true"
-                :icon="Activity"
-              />
-              <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500">Status:</span>
-                <select
-                  v-if="editingMeta === 'status'"
-                  v-model="metaStatus"
-                  class="rounded border px-2 py-1 text-sm"
-                  @change="saveMeta"
-                >
-                  <option value="">None</option>
-                  <option value="todo">Todo</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="blocked">Blocked</option>
-                  <option value="done">Done</option>
-                </select>
-                <template v-else>
-                  <span v-if="task.status" class="text-sm">{{ formatStatus(task.status) }}</span>
-                  <button
-                    type="button"
-                    class="text-sm text-indigo-600 hover:underline"
-                    @click="startEditMeta('status')"
-                  >
-                    {{ task.status ? 'Change' : '+ Set status' }}
-                  </button>
-                </template>
+                <EmptyState
+                  v-else
+                  title="No activity yet"
+                  :compact="true"
+                  :icon="Activity"
+                />
               </div>
             </div>
           </div>
@@ -239,7 +285,7 @@
 
 <script setup>
 import { watch, ref, onMounted, onUnmounted } from 'vue';
-import { Activity } from 'lucide-vue-next';
+import { Activity, Calendar, Eye, EyeOff, Flag, Tag, User, X } from 'lucide-vue-next';
 import Avatar from '../ui/Avatar.vue';
 import EmptyState from '../shared/EmptyState.vue';
 import { usePresenceStore } from '../../stores/presenceStore';
@@ -287,7 +333,6 @@ const showAssigneeSelector = ref(false);
 const editingMeta = ref(null);
 const metaDueDate = ref('');
 const metaPriority = ref('');
-const metaStatus = ref('');
 const newSubtaskTitle = ref('');
 const activities = ref([]);
 
@@ -333,11 +378,6 @@ function startEditMeta(field) {
   editingMeta.value = field;
   metaDueDate.value = task.value?.due_date ?? '';
   metaPriority.value = task.value?.priority ?? '';
-  metaStatus.value = task.value?.status ?? '';
-}
-
-function formatStatus(s) {
-  return s?.replace(/_/g, ' ') ?? '';
 }
 
 async function addLabel(labelId) {
@@ -400,11 +440,9 @@ async function saveMeta() {
     const payload = {};
     if (editingMeta.value === 'due_date') payload.due_date = metaDueDate.value || null;
     if (editingMeta.value === 'priority') payload.priority = metaPriority.value || null;
-    if (editingMeta.value === 'status') payload.status = metaStatus.value || null;
     await props.updateMeta(task.value.id, payload);
     if (payload.due_date !== undefined) task.value.due_date = payload.due_date;
     if (payload.priority !== undefined) task.value.priority = payload.priority;
-    if (payload.status !== undefined) task.value.status = payload.status;
     editingMeta.value = null;
   } catch {
     // Handle error

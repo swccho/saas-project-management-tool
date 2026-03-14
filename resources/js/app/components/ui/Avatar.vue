@@ -2,12 +2,19 @@
   <span class="relative inline-block">
     <span
       :class="cn(
-        'inline-flex shrink-0 items-center justify-center rounded-full bg-gray-200 text-sm font-medium text-gray-600',
+        'inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-200 text-sm font-medium text-gray-600',
         sizeClasses[size],
         $attrs.class
       )"
     >
       <slot v-if="$slots.default" />
+      <img
+        v-else-if="src && !imgError"
+        :src="src"
+        :alt="name || 'Avatar'"
+        class="h-full w-full object-cover"
+        @error="imgError = true"
+      />
       <span v-else>{{ initials }}</span>
     </span>
     <span
@@ -23,7 +30,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { cn } from '../../lib/utils';
 
 const props = defineProps({
@@ -32,6 +39,9 @@ const props = defineProps({
   size: { type: String, default: 'default' },
   status: { type: String, default: '' },
 });
+
+const imgError = ref(false);
+watch(() => props.src, () => { imgError.value = false; });
 
 const initials = computed(() => {
   if (!props.name) return '?';

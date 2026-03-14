@@ -22,10 +22,41 @@ class AnalyticsService
 
     public function getProjectAnalytics(Project $project, User $user): array
     {
-        return $this->computeAnalytics(
-            Task::where('project_id', $project->id),
-            $user
-        );
+        $board = $project->boards()->where('is_default', true)->first()
+            ?? $project->boards()->orderBy('sort_order')->first();
+
+        if (! $board) {
+            return [
+                'columns' => [],
+                'total_tasks' => 0,
+                'overdue_tasks' => 0,
+                'assigned_to_user' => 0,
+            ];
+        }
+
+        $today = Carbon::today();
+        $baseQuery = Task::where('project_id', $project->id);
+
+        $columns = $board->columns()->get()->map(function ($col) {
+            $count = Task::where('column_id', $col->id)->count();
+
+            return [
+                'id' => $col->id,
+                'name' => $col->name,
+                'count' => $count,
+            ];
+        })->all();
+
+        $totalTasks = array_sum(array_column($columns, 'count'));
+        $overdueTasks = (clone $baseQuery)->whereNotNull('due_date')->where('due_date', '<', $today)->count();
+        $assignedToUser = (clone $baseQuery)->where('assigned_to', $user->id)->count();
+
+        return [
+            'columns' => $columns,
+            'total_tasks' => $totalTasks,
+            'overdue_tasks' => $overdueTasks,
+            'assigned_to_user' => $assignedToUser,
+        ];
     }
 
     /**

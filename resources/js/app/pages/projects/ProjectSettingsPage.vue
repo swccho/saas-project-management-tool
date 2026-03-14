@@ -1,15 +1,6 @@
 <template>
   <div class="space-y-6">
-    <div v-if="project" class="flex items-center gap-4">
-      <router-link :to="`/projects/${projectId}`" class="text-sm text-gray-600 hover:text-gray-900">
-        ← Back to Project
-      </router-link>
-    </div>
-    <div v-if="project">
-      <h1 class="text-2xl font-semibold tracking-tight">{{ project.name }}</h1>
-      <p class="mt-1 text-sm text-gray-500">{{ project.key }}</p>
-    </div>
-    <Card v-if="project">
+    <Card v-if="projectId">
       <CardHeader>
         <h2 class="text-lg font-semibold">Labels</h2>
         <p class="text-sm text-gray-600">Create and manage labels for this project.</p>
@@ -45,10 +36,9 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useWorkspaceStore } from '../../stores/workspaceStore';
-import { projectService } from '../../services/projectService';
 import { labelService } from '../../services/labelService';
 import Card from '../../components/ui/Card.vue';
 import CardHeader from '../../components/ui/CardHeader.vue';
@@ -57,29 +47,19 @@ import Button from '../../components/ui/Button.vue';
 
 const route = useRoute();
 const workspaceStore = useWorkspaceStore();
-const project = ref(null);
 const labels = ref([]);
 const newLabelName = ref('');
 const newLabelColor = ref('#6366F1');
 const creating = ref(false);
 
-const projectId = route.params.id;
-
-async function fetchProject() {
-  const wid = workspaceStore.activeWorkspaceId;
-  if (!wid || !projectId) return;
-  try {
-    project.value = await projectService.get(wid, projectId);
-  } catch {
-    project.value = null;
-  }
-}
+const projectId = computed(() => route.params.id);
 
 async function fetchLabels() {
   const wid = workspaceStore.activeWorkspaceId;
-  if (!wid || !projectId) return;
+  const pid = projectId.value;
+  if (!wid || !pid) return;
   try {
-    const data = await labelService.list(wid, projectId);
+    const data = await labelService.list(wid, pid);
     labels.value = Array.isArray(data) ? data : (data?.data ?? []);
   } catch {
     labels.value = [];
@@ -88,10 +68,11 @@ async function fetchLabels() {
 
 async function createLabel() {
   const wid = workspaceStore.activeWorkspaceId;
-  if (!wid || !projectId || !newLabelName.value.trim()) return;
+  const pid = projectId.value;
+  if (!wid || !pid || !newLabelName.value.trim()) return;
   creating.value = true;
   try {
-    await labelService.create(wid, projectId, {
+    await labelService.create(wid, pid, {
       name: newLabelName.value.trim(),
       color: newLabelColor.value,
     });
@@ -102,8 +83,7 @@ async function createLabel() {
   }
 }
 
-watch([() => projectId, () => workspaceStore.activeWorkspaceId], () => {
-  fetchProject();
+watch([projectId, () => workspaceStore.activeWorkspaceId], () => {
   fetchLabels();
 });
 
@@ -111,7 +91,6 @@ onMounted(async () => {
   if (workspaceStore.workspaces.length === 0) {
     await workspaceStore.fetchWorkspaces();
   }
-  await fetchProject();
   await fetchLabels();
 });
 </script>

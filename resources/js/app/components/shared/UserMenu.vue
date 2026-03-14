@@ -5,7 +5,11 @@
       class="flex items-center gap-2 rounded-lg p-1 hover:bg-gray-100"
       @click="open = !open"
     >
-      <Avatar :name="authStore.user?.name" size="sm" />
+      <Avatar
+        :name="authStore.user?.name"
+        :src="authStore.user?.avatar_url"
+        size="sm"
+      />
       <ChevronDown class="h-4 w-4" />
     </button>
     <div v-if="open" class="absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">

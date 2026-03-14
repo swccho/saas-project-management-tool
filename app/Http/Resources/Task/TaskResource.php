@@ -31,6 +31,9 @@ class TaskResource extends JsonResource
                 'id' => $this->assignee->id,
                 'name' => $this->assignee->name,
                 'email' => $this->assignee->email,
+                'avatar_url' => $this->assignee->avatar
+                    ? app(\App\Services\ProfileService::class)->getAvatarUrl($this->assignee)
+                    : null,
             ]),
             'labels' => $this->whenLoaded('labels', fn () => $this->labels->map(fn ($l) => [
                 'id' => $l->id,

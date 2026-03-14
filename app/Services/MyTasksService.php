@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Models\Workspace;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
 
 class MyTasksService
 {
@@ -20,18 +19,24 @@ class MyTasksService
             ->whereIn('project_id', $projectIds)
             ->with(['project:id,name,key,color', 'assignee:id,name', 'column.board:id,name']);
 
+        $today = Carbon::today();
+
         $query = match ($view) {
             'assigned' => $query->where('assigned_to', $user->id),
             'created' => $query->where('created_by', $user->id),
             'watching' => $query->whereHas('watchers', fn ($q) => $q->where('user_id', $user->id)),
             'overdue' => $query->where('assigned_to', $user->id)
                 ->whereNotNull('due_date')
-                ->where('due_date', '<', Carbon::today()),
+                ->whereDate('due_date', '<', $today),
             'due_today' => $query->where('assigned_to', $user->id)
-                ->whereDate('due_date', Carbon::today()),
+                ->whereNotNull('due_date')
+                ->where('due_date', $today->toDateString()),
             'due_week' => $query->where('assigned_to', $user->id)
                 ->whereNotNull('due_date')
-                ->whereBetween('due_date', [Carbon::today(), Carbon::today()->addDays(7)]),
+                ->whereBetween('due_date', [
+                    $today->copy()->startOfWeek()->toDateString(),
+                    $today->copy()->endOfWeek()->toDateString(),
+                ]),
             default => $query->where('assigned_to', $user->id),
         };
 

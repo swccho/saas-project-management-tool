@@ -1,24 +1,5 @@
 <template>
-  <div class="space-y-6">
-    <div v-if="project" class="flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <router-link :to="`/projects/${projectId}`" class="text-sm text-gray-600 hover:text-gray-900">
-          ← Back to Project
-        </router-link>
-        <div v-if="boards.length > 0" class="flex items-center gap-2">
-          <select
-            v-model="selectedBoardId"
-            class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-            <option v-for="b in boards" :key="b.id" :value="b.id">
-              {{ b.name }}
-            </option>
-          </select>
-          <Button size="sm" @click="showCreateBoard = true">New board</Button>
-        </div>
-      </div>
-    </div>
-
+  <div class="min-w-0 space-y-6">
     <template v-if="!project">
       <p class="text-sm text-gray-600">Loading...</p>
     </template>
@@ -38,8 +19,26 @@
 
     <template v-else>
       <div class="space-y-4">
-        <div class="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-4 rounded-lg bg-white/95 py-2 backdrop-blur sm:bg-white sm:py-0">
-          <div class="flex flex-wrap items-center gap-4">
+        <div class="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm">
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="relative flex items-center rounded-md border border-gray-200 bg-white shadow-sm">
+              <Search class="absolute left-2.5 h-4 w-4 text-gray-400" />
+              <input
+                v-model="searchInput"
+                type="text"
+                placeholder="Search tasks..."
+                class="h-9 w-48 border-0 bg-transparent py-1.5 pl-9 pr-8 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-0"
+              />
+              <button
+                v-if="searchQuery"
+                type="button"
+                class="absolute right-2 rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                @click="(searchInput = ''), (searchQuery = '')"
+              >
+                <X class="h-4 w-4" />
+              </button>
+            </div>
+            <div class="h-5 w-px bg-gray-200" />
             <BoardFilterBar
               :filters="boardFilters"
               :project-members="projectMembers"
@@ -47,36 +46,14 @@
               @update:filter="({ key, value }) => (boardFilters[key] = value)"
               @clear-filters="clearFilters"
             />
-              <BoardViewSelector
-                :saved-views="savedViews"
-                :save-view="saveCurrentView"
-                :delete-view-fn="deleteSavedView"
-                @apply-view="applySavedView"
-              />
-              <select
-                v-model="sortMode"
-                class="rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              >
-                <option v-for="opt in SORT_MODES" :key="opt.value" :value="opt.value">
-                  {{ opt.label }}
-                </option>
-              </select>
-              <div class="relative">
-                <input
-                  v-model="searchInput"
-                  type="text"
-                  placeholder="Search tasks..."
-                  class="w-48 rounded-lg border border-gray-300 py-1.5 pl-3 pr-8 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                />
-                <button
-                  v-if="searchQuery"
-                  type="button"
-                  class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  @click="(searchInput = ''), (searchQuery = '')"
-                >
-                  ×
-                </button>
-              </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <BoardSelectorDropdown
+              :model-value="selectedBoardId"
+              :boards="boards"
+              @update:model-value="selectedBoardId = $event"
+            />
+            <Button size="sm" @click="showCreateBoard = true">New board</Button>
           </div>
         </div>
         <BoardSkeleton v-if="boardLoading" :column-count="4" :card-count="3" />
@@ -113,36 +90,29 @@
             </template>
           </EmptyColumnState>
         </template>
-        <div v-else class="flex min-w-max flex-nowrap gap-4 overflow-x-auto pb-4">
-          <draggable
-          v-model="boardColumns"
-          item-key="id"
-          tag="div"
-          class="flex gap-4 overflow-x-auto min-w-0 flex-1"
-          :class="{ 'opacity-70': reorderingColumns }"
-          ghost-class="opacity-50"
-          chosen-class="shadow-md"
-          :disabled="sortMode !== 'manual' || !!searchQuery"
-          @end="handleColumnReorder"
-          @start="reorderingColumns = true"
+         <div
+          v-else
+          class="sticky bottom-0 flex min-w-0 max-w-full flex-nowrap items-start gap-4 overflow-x-auto overflow-y-hidden bg-[#FAFAFA] pb-4 pt-2"
         >
-          <template #item="{ element: col }">
-            <BoardColumn
+          <BoardColumn
+              v-for="col in boardColumns"
+              :key="col.id"
               :column="col"
-              :tasks="col.tasks"
-              :allow-task-drag="sortMode === 'manual' && !searchQuery"
+              :tasks="col.tasks ?? []"
+              :allow-task-drag="true"
+              :is-drag-over="dragOverColumnId === col.id"
               @update:tasks="(t) => updateColumnTasks(col.id, t)"
               @task-click="openTask"
               @add-task="startAddTask(col)"
               @delete-column="deleteColumn(col)"
               @task-moved="handleTaskMoved"
               @column-rename="(name) => saveColumnName(col, name)"
+              @drag-over="dragOverColumnId = col.id"
+              @drag-end="dragOverColumnId = null"
             />
-          </template>
-          </draggable>
           <button
           type="button"
-          class="flex min-w-[280px] flex-shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-gray-300 text-sm text-gray-500 hover:border-indigo-400 hover:text-indigo-600"
+          class="flex h-[120px] min-w-[280px] flex-shrink-0 self-start items-center justify-center rounded-xl border-2 border-dashed border-gray-300 text-sm text-gray-500 hover:border-indigo-400 hover:text-indigo-600"
           @click="showAddColumn = true"
         >
             + Add column
@@ -209,6 +179,15 @@
       </div>
     </div>
 
+    <ConfirmModal
+      v-model="showDeleteColumnModal"
+      title="Delete column"
+      :message="deleteColumnTarget ? `Delete column '${deleteColumnTarget.name}'?` : ''"
+      confirm-label="Delete"
+      confirm-variant="destructive"
+      @confirm="confirmDeleteColumn"
+    />
+
     <TaskDetailsDrawer
       v-model="showTaskDrawer"
       :task-id="selectedTaskId"
@@ -238,7 +217,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
 import { useRoute } from 'vue-router';
 import { useWorkspaceStore } from '../../stores/workspaceStore';
@@ -252,21 +231,21 @@ import { subtaskService } from '../../services/subtaskService';
 import { taskActivityService } from '../../services/taskActivityService';
 import { commentService } from '../../services/commentService';
 import { attachmentService } from '../../services/attachmentService';
-import { boardViewService } from '../../services/boardViewService';
-import { VueDraggableNext as draggable } from 'vue-draggable-next';
 import { useBoardFilters } from '../../composables/useBoardFilters';
 import { useBoardSort } from '../../composables/useBoardSort';
 import Button from '../../components/ui/Button.vue';
 import BoardColumn from '../../components/boards/BoardColumn.vue';
 import BoardFilterBar from '../../components/boards/BoardFilterBar.vue';
-import BoardViewSelector from '../../components/boards/BoardViewSelector.vue';
+import BoardSelectorDropdown from '../../components/boards/BoardSelectorDropdown.vue';
 import BoardSkeleton from '../../components/boards/BoardSkeleton.vue';
 import EmptyColumnState from '../../components/boards/EmptyColumnState.vue';
 import EmptyState from '../../components/shared/EmptyState.vue';
 import TaskDetailsDrawer from '../../components/tasks/TaskDetailsDrawer.vue';
 import Card from '../../components/ui/Card.vue';
 import CardContent from '../../components/ui/CardContent.vue';
+import ConfirmModal from '../../components/ui/ConfirmModal.vue';
 import Input from '../../components/ui/Input.vue';
+import { Search, X } from 'lucide-vue-next';
 
 const route = useRoute();
 const workspaceStore = useWorkspaceStore();
@@ -282,6 +261,7 @@ const addingColumn = ref(false);
 const columnsWithTasks = ref([]);
 const movingTask = ref(false);
 const reorderingColumns = ref(false);
+const dragOverColumnId = ref(null);
 const showAddTask = ref(false);
 const addTaskColumn = ref(null);
 const newTaskTitle = ref('');
@@ -293,22 +273,21 @@ const taskActivities = ref([]);
 const projectId = computed(() => route.params.id);
 
 const { boardFilters, clearFilters, applyFilters } = useBoardFilters();
-const { sortMode, SORT_MODES, applySort } = useBoardSort();
+const { sortMode, applySort } = useBoardSort();
 const filteredColumnsWithTasks = ref([]);
 const displayColumns = ref([]);
 const boardColumns = ref([]);
 const searchInput = ref('');
 const searchQuery = ref('');
-const savedViews = ref([]);
 const boardLoading = ref(false);
 
 const currentBoard = computed(() =>
-  boards.value.find((b) => b.id === selectedBoardId.value)
+  boards.value.find((b) => Number(b.id) === Number(selectedBoardId.value))
 );
 
 const hasActiveFilters = computed(() => {
   const f = boardFilters.value;
-  return f.assignee != null || f.priority || f.label || f.status || f.overdueOnly;
+  return (f.assignee?.length ?? 0) > 0 || (f.priority?.length ?? 0) > 0 || (f.label?.length ?? 0) > 0;
 });
 
 async function fetchTasks() {
@@ -319,12 +298,38 @@ async function fetchTasks() {
   boardLoading.value = true;
   try {
     const data = await taskService.list(wid, pid, bid);
-    columnsWithTasks.value = data?.columns ?? [];
+    if (Number(selectedBoardId.value) !== Number(bid)) return;
+    const raw = data?.columns ?? data?.data?.columns ?? [];
+    
+    const normalized = Array.isArray(raw)
+      ? raw.map((col) => ({
+          ...col,
+          tasks: Array.isArray(col.tasks) ? col.tasks : (col.tasks?.data ?? []),
+        }))
+      : [];
+    const cols = normalized.length > 0 ? normalized : getColumnsFromBoard();
+    columnsWithTasks.value = cols;
+    filteredColumnsWithTasks.value = applyFilters(cols);
+    displayColumns.value = applySort(filteredColumnsWithTasks.value, sortMode.value);
+    boardColumns.value = applySearch(displayColumns.value, searchQuery.value);
+    
   } catch {
-    columnsWithTasks.value = [];
+    if (Number(selectedBoardId.value) !== Number(bid)) return;
+    const cols = getColumnsFromBoard();
+    columnsWithTasks.value = cols;
+    filteredColumnsWithTasks.value = applyFilters(cols);
+    displayColumns.value = applySort(filteredColumnsWithTasks.value, sortMode.value);
+    boardColumns.value = applySearch(displayColumns.value, searchQuery.value);
   } finally {
     boardLoading.value = false;
   }
+}
+
+function getColumnsFromBoard() {
+  const bid = selectedBoardId.value;
+  const board = boards.value.find((b) => Number(b.id) === Number(bid));
+  const cols = board?.columns ?? [];
+  return Array.isArray(cols) ? cols.map((c) => ({ ...c, tasks: [] })) : [];
 }
 
 function startAddTask(col) {
@@ -393,6 +398,7 @@ async function setAssignee(taskId, userId) {
   if (!wid || !pid || !bid) return;
   await taskService.setAssignee(wid, pid, bid, taskId, userId);
   await fetchTasks();
+  await refreshDrawerActivities();
 }
 
 async function updateTaskMeta(taskId, payload) {
@@ -402,6 +408,7 @@ async function updateTaskMeta(taskId, payload) {
   if (!wid || !pid || !bid) return;
   await taskService.updateMeta(wid, pid, bid, taskId, payload);
   await fetchTasks();
+  await refreshDrawerActivities();
 }
 
 async function fetchLabels() {
@@ -495,66 +502,8 @@ watch([projectId, () => workspaceStore.activeWorkspaceId], () => {
 watch(selectedBoardId, (id) => {
   if (id) {
     fetchTasks();
-    fetchSavedViews();
   }
 }, { immediate: true });
-
-async function fetchSavedViews() {
-  const wid = workspaceStore.activeWorkspaceId;
-  const pid = projectId.value;
-  const bid = selectedBoardId.value;
-  if (!wid || !pid || !bid) return;
-  try {
-    const data = await boardViewService.list(wid, pid, bid);
-    savedViews.value = Array.isArray(data) ? data : (data?.data ?? []);
-  } catch {
-    savedViews.value = [];
-  }
-}
-
-function applySavedView(view) {
-  const fc = view.filter_config ?? {};
-  boardFilters.value = {
-    ...boardFilters.value,
-    assignee: fc.assignee ?? null,
-    priority: fc.priority ?? null,
-    label: fc.label ?? null,
-    status: fc.status ?? null,
-    overdueOnly: fc.overdue_only ?? false,
-  };
-  const sc = view.sort_config ?? {};
-  sortMode.value = sc.mode ?? 'manual';
-}
-
-async function saveCurrentView(name) {
-  const wid = workspaceStore.activeWorkspaceId;
-  const pid = projectId.value;
-  const bid = selectedBoardId.value;
-  if (!wid || !pid || !bid) return;
-  const filterConfig = {
-    assignee: boardFilters.value.assignee ?? null,
-    priority: boardFilters.value.priority ?? null,
-    label: boardFilters.value.label ?? null,
-    status: boardFilters.value.status ?? null,
-    overdue_only: boardFilters.value.overdueOnly ?? false,
-  };
-  const sortConfig = { mode: sortMode.value };
-  await boardViewService.create(wid, pid, bid, {
-    name,
-    filter_config: filterConfig,
-    sort_config: sortConfig,
-  });
-  await fetchSavedViews();
-}
-
-async function deleteSavedView(view) {
-  const wid = workspaceStore.activeWorkspaceId;
-  const pid = projectId.value;
-  const bid = selectedBoardId.value;
-  if (!wid || !pid || !bid) return;
-  await boardViewService.delete(wid, pid, bid, view.id);
-  await fetchSavedViews();
-}
 
 watch(
   [columnsWithTasks, boardFilters],
@@ -593,6 +542,10 @@ const setSearchQuery = useDebounceFn((v) => {
 
 watch(searchInput, (v) => setSearchQuery(v));
 
+watch(dragOverColumnId, (id) => {
+  document.body.classList.toggle('drag-over-column', id != null);
+});
+
 watch(
   [displayColumns, searchQuery],
   () => {
@@ -601,17 +554,26 @@ watch(
   { immediate: true, deep: true }
 );
 
+async function refreshDrawerActivities() {
+  const taskId = selectedTaskId.value;
+  const wid = workspaceStore.activeWorkspaceId;
+  const pid = projectId.value;
+  const bid = selectedBoardId.value;
+  if (!taskId || !wid || !pid || !bid) return;
+  try {
+    drawerActivities.value = await taskActivityService.list(wid, pid, bid, taskId) ?? [];
+  } catch {
+    drawerActivities.value = [];
+  }
+}
+
 watch([showTaskDrawer, selectedTaskId], async ([open, taskId]) => {
   if (open && taskId) {
     const wid = workspaceStore.activeWorkspaceId;
     const pid = projectId.value;
     const bid = selectedBoardId.value;
     if (wid && pid && bid) {
-      try {
-        drawerActivities.value = await taskActivityService.list(wid, pid, bid, taskId) ?? [];
-      } catch {
-        drawerActivities.value = [];
-      }
+      await refreshDrawerActivities();
       drawerCommentsLoading.value = true;
       drawerAttachmentsLoading.value = true;
       try {
@@ -644,6 +606,7 @@ async function addCommentToTask(body) {
   if (!wid || !pid || !bid || !taskId) return;
   const comment = await commentService.create(wid, pid, bid, taskId, { body });
   drawerComments.value = [...drawerComments.value, comment];
+  await refreshDrawerActivities();
 }
 
 async function updateTaskComment(commentId, body) {
@@ -734,9 +697,23 @@ async function addColumn() {
 }
 
 function updateColumnTasks(columnId, newTasks) {
-  if (searchQuery.value) return;
   const col = columnsWithTasks.value.find((c) => c.id === columnId);
-  if (col) col.tasks = newTasks;
+  if (!col) return;
+  const prevTasks = col.tasks ?? [];
+  const prevIds = new Set(prevTasks.map((t) => t?.id).filter(Boolean));
+  const addedTask = Array.isArray(newTasks)
+    ? newTasks.find((t) => t?.id != null && !prevIds.has(t.id))
+    : null;
+  const shouldUpdateLocal = !hasActiveFilters.value && !(searchQuery.value || '').trim();
+  if (addedTask && newTasks.length > prevTasks.length) {
+    const sortOrder = newTasks.findIndex((t) => t?.id === addedTask.id);
+    if (sortOrder >= 0) {
+      handleTaskMoved({ task: addedTask, columnId: Number(columnId), sortOrder });
+    }
+  }
+  if (shouldUpdateLocal) {
+    col.tasks = newTasks;
+  }
 }
 
 async function handleColumnReorder() {
@@ -762,12 +739,15 @@ async function handleTaskMoved({ task, columnId, sortOrder }) {
   const wid = workspaceStore.activeWorkspaceId;
   const pid = projectId.value;
   const bid = selectedBoardId.value;
-  if (!wid || !pid || !bid || !task?.id) return;
+  if (!wid || !pid || !bid || !task?.id || movingTask.value) return;
   movingTask.value = true;
   const prevColumns = JSON.parse(JSON.stringify(columnsWithTasks.value));
   try {
     await taskService.move(wid, pid, bid, task.id, columnId, sortOrder);
     await fetchTasks();
+    if (Number(selectedTaskId.value) === Number(task.id)) {
+      await refreshDrawerActivities();
+    }
   } catch {
     columnsWithTasks.value = prevColumns;
     filteredColumnsWithTasks.value = applyFilters(columnsWithTasks.value);
@@ -791,8 +771,17 @@ async function saveColumnName(col, name) {
   }
 }
 
-async function deleteColumn(col) {
-  if (!confirm(`Delete column "${col.name}"?`)) return;
+const showDeleteColumnModal = ref(false);
+const deleteColumnTarget = ref(null);
+
+function deleteColumn(col) {
+  deleteColumnTarget.value = col;
+  showDeleteColumnModal.value = true;
+}
+
+async function confirmDeleteColumn() {
+  const col = deleteColumnTarget.value;
+  if (!col) return;
   const wid = workspaceStore.activeWorkspaceId;
   const pid = projectId.value;
   const bid = selectedBoardId.value;
@@ -802,12 +791,26 @@ async function deleteColumn(col) {
     await fetchTasks();
   } catch {
     // Error toast shown by apiClient interceptor
+  } finally {
+    deleteColumnTarget.value = null;
   }
 }
+
+onBeforeUnmount(() => {
+  document.body.classList.remove('drag-over-column');
+  showTaskDrawer.value = false;
+  showCreateBoard.value = false;
+  showAddColumn.value = false;
+  showAddTask.value = false;
+  showDeleteColumnModal.value = false;
+});
 
 onMounted(async () => {
   if (workspaceStore.workspaces.length === 0) {
     await workspaceStore.fetchWorkspaces();
+  }
+  if (!workspaceStore.activeWorkspaceId && workspaceStore.workspaces.length > 0) {
+    workspaceStore.setActive(workspaceStore.workspaces[0].id);
   }
   await fetchProject();
   await fetchBoards();

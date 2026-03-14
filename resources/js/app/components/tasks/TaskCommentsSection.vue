@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-3">
-    <h4 class="text-sm font-medium text-gray-700">Comments</h4>
+    <h4 class="text-xs font-medium uppercase tracking-wider text-gray-500">Comments</h4>
     <div v-if="loading" class="flex justify-center py-4">
       <div class="h-6 w-6 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
     </div>
@@ -16,7 +16,7 @@
         <div
           v-for="c in comments"
           :key="c.id"
-          class="flex gap-3 rounded-lg border border-gray-100 bg-gray-50/50 p-3"
+          class="flex gap-3 rounded-lg bg-white p-4 shadow-sm"
         >
           <Avatar :name="c.user?.name" :status="presenceStatus(c.user?.id)" size="sm" class="shrink-0" />
           <div class="min-w-0 flex-1">
@@ -58,6 +58,14 @@
           </div>
         </div>
       </div>
+      <ConfirmModal
+        v-model="showDeleteCommentModal"
+        title="Delete comment"
+        message="Delete this comment?"
+        confirm-label="Delete"
+        confirm-variant="destructive"
+        @confirm="doDeleteComment"
+      />
       <form class="flex flex-col gap-2" @submit.prevent="submitComment">
         <textarea
           v-model="newCommentBody"
@@ -77,6 +85,7 @@ import { MessageSquare } from 'lucide-vue-next';
 import Avatar from '../ui/Avatar.vue';
 import EmptyState from '../shared/EmptyState.vue';
 import Button from '../ui/Button.vue';
+import ConfirmModal from '../ui/ConfirmModal.vue';
 import MentionTextarea from './MentionTextarea.vue';
 import { formatCommentBody } from '../../utils/formatCommentBody.js';
 import { usePresenceStore } from '../../stores/presenceStore';
@@ -137,8 +146,14 @@ async function saveEdit(c) {
 }
 
 function confirmDelete(c) {
-  if (!confirm('Delete this comment?')) return;
-  props.deleteComment?.(c.id);
+  commentToDelete.value = c;
+  showDeleteCommentModal.value = true;
+}
+
+function doDeleteComment() {
+  const c = commentToDelete.value;
+  if (c) props.deleteComment?.(c.id);
+  commentToDelete.value = null;
 }
 
 async function submitComment() {

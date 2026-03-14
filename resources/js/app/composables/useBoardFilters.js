@@ -2,11 +2,9 @@ import { ref, computed } from 'vue';
 
 /**
  * @typedef {Object} BoardFilters
- * @property {number|null} assignee - User ID or null for all
- * @property {string|null} priority - Priority value or null
- * @property {number|null} label - Label ID or null
- * @property {string|null} status - Status value or null
- * @property {boolean} overdueOnly - Show only overdue tasks
+ * @property {number[]} assignee - User IDs (empty = all)
+ * @property {string[]} priority - Priority values (empty = all)
+ * @property {number[]} label - Label IDs (empty = all)
  */
 
 /**
@@ -15,30 +13,24 @@ import { ref, computed } from 'vue';
  */
 export function useBoardFilters(initial = {}) {
   const boardFilters = ref({
-    assignee: initial.assignee ?? null,
-    priority: initial.priority ?? null,
-    label: initial.label ?? null,
-    status: initial.status ?? null,
-    overdueOnly: initial.overdueOnly ?? false,
+    assignee: Array.isArray(initial.assignee) ? initial.assignee : [],
+    priority: Array.isArray(initial.priority) ? initial.priority : [],
+    label: Array.isArray(initial.label) ? initial.label : [],
   });
 
   const activeFilterCount = computed(() => {
     let n = 0;
-    if (boardFilters.value.assignee != null) n++;
-    if (boardFilters.value.priority != null && boardFilters.value.priority !== '') n++;
-    if (boardFilters.value.label != null) n++;
-    if (boardFilters.value.status != null && boardFilters.value.status !== '') n++;
-    if (boardFilters.value.overdueOnly) n++;
+    if ((boardFilters.value.assignee ?? []).length > 0) n++;
+    if ((boardFilters.value.priority ?? []).length > 0) n++;
+    if ((boardFilters.value.label ?? []).length > 0) n++;
     return n;
   });
 
   function clearFilters() {
     boardFilters.value = {
-      assignee: null,
-      priority: null,
-      label: null,
-      status: null,
-      overdueOnly: false,
+      assignee: [],
+      priority: [],
+      label: [],
     };
   }
 
@@ -49,29 +41,20 @@ export function useBoardFilters(initial = {}) {
   function applyFilters(columns) {
     if (!columns || !Array.isArray(columns)) return columns ?? [];
     const f = boardFilters.value;
-    const hasAny =
-      f.assignee != null ||
-      (f.priority != null && f.priority !== '') ||
-      f.label != null ||
-      (f.status != null && f.status !== '') ||
-      f.overdueOnly;
+    const assigneeIds = f.assignee ?? [];
+    const priorities = f.priority ?? [];
+    const labelIds = f.label ?? [];
+    const hasAny = assigneeIds.length > 0 || priorities.length > 0 || labelIds.length > 0;
     if (!hasAny) return columns;
 
-    const now = new Date();
     return columns.map((col) => ({
       ...col,
       tasks: (col.tasks ?? []).filter((task) => {
-        if (f.assignee != null && task.assigned_to !== f.assignee) return false;
-        if (f.priority && task.priority !== f.priority) return false;
-        if (f.label != null) {
-          const labelIds = (task.labels ?? []).map((l) => l.id);
-          if (!labelIds.includes(f.label)) return false;
-        }
-        if (f.status && task.status !== f.status) return false;
-        if (f.overdueOnly) {
-          if (!task.due_date) return false;
-          const due = new Date(task.due_date);
-          if (due >= now || task.status === 'done') return false;
+        if (assigneeIds.length > 0 && !assigneeIds.includes(task.assigned_to)) return false;
+        if (priorities.length > 0 && !priorities.includes(task.priority)) return false;
+        if (labelIds.length > 0) {
+          const taskLabelIds = (task.labels ?? []).map((l) => l.id);
+          if (!labelIds.some((id) => taskLabelIds.includes(id))) return false;
         }
         return true;
       }),

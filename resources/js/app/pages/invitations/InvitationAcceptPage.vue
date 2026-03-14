@@ -54,7 +54,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { invitationService } from '../../services/invitationService';
-import { workspaceStore } from '../../stores/workspaceStore';
+import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { useAuthStore } from '../../stores/authStore';
 import Card from '../../components/ui/Card.vue';
 import CardContent from '../../components/ui/CardContent.vue';
@@ -63,6 +63,7 @@ import Button from '../../components/ui/Button.vue';
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const workspaceStore = useWorkspaceStore();
 
 const token = computed(() => route.params.token);
 const preview = ref(null);

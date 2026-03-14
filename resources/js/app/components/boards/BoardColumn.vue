@@ -1,6 +1,11 @@
 <template>
   <div
-    class="min-w-[240px] flex-shrink-0 rounded-xl border border-gray-200 bg-gray-50/50 p-4 transition-colors sm:min-w-[280px]"
+    class="h-fit min-w-[240px] flex-shrink-0 self-start rounded-xl border-2 p-4 transition-colors sm:min-w-[280px]"
+    :class="[
+      isDragOver
+        ? 'border-indigo-400 bg-indigo-50/80'
+        : 'border-gray-200 bg-gray-50/50',
+    ]"
     :data-column-id="column.id"
   >
     <div class="flex items-center justify-between gap-2">
@@ -31,31 +36,38 @@
     </div>
     <div class="mt-3 space-y-2">
       <draggable
-        v-model="localTasks"
+        :list="localTasks"
         :data-column-id="column.id"
         :disabled="!allowTaskDrag"
-        group="tasks"
+        :group="{ name: 'tasks', pull: true, put: true }"
+        :empty-insert-threshold="120"
         item-key="id"
         tag="div"
-        class="space-y-2"
-        :class="{ 'opacity-50': isDragging }"
-        ghost-class="opacity-50"
+        :class="[
+          'space-y-2',
+          (localTasks?.length ?? 0) === 0 && !isDragOver ? 'min-h-0' : 'min-h-[80px]',
+        ]"
+        ghost-class="task-drag-ghost"
         chosen-class="shadow-md"
         drag-class="shadow-lg"
         @end="onDragEnd"
-        @start="isDragging = true"
+        @start="onDragStart"
+        @change="onListChange"
+        @add="onAdd"
+        @move="onDragMove"
       >
-        <template #item="{ element: task }">
-          <TaskCard
-            :task="task"
-            class="transition-shadow hover:shadow-md"
-            @click="$emit('task-click', task)"
-          />
-        </template>
+        <TaskCard
+          v-for="task in localTasks"
+          :key="task.id"
+          :task="task"
+          class="transition-shadow hover:shadow-md"
+          @click="$emit('task-click', task)"
+        />
       </draggable>
       <div
         v-if="(localTasks?.length ?? 0) === 0"
         class="rounded-lg border-2 border-dashed border-gray-200 py-4 text-center text-sm text-gray-500"
+        :class="isDragOver ? 'block' : 'hidden'"
       >
         No tasks in this column
       </div>
@@ -71,7 +83,7 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick } from 'vue';
+import { ref, watch, nextTick } from 'vue';
 import { VueDraggableNext as draggable } from 'vue-draggable-next';
 import TaskCard from '../tasks/TaskCard.vue';
 
@@ -79,6 +91,7 @@ const props = defineProps({
   column: { type: Object, required: true },
   tasks: { type: Array, default: () => [] },
   allowTaskDrag: { type: Boolean, default: true },
+  isDragOver: { type: Boolean, default: false },
 });
 
 const emit = defineEmits([
@@ -88,12 +101,52 @@ const emit = defineEmits([
   'delete-column',
   'task-moved',
   'column-rename',
+  'drag-over',
+  'drag-end',
 ]);
 
-const localTasks = computed({
-  get: () => [...(props.tasks || [])],
-  set: (val) => emit('update:tasks', val),
-});
+const localTasks = ref([]);
+
+watch(
+  () => props.tasks,
+  (val) => {
+    const arr = Array.isArray(val) ? [...val] : [];
+    localTasks.value.splice(0, localTasks.value.length, ...arr);
+  },
+  { immediate: true }
+);
+
+const moveEmittedForTask = ref(null);
+
+function emitTaskMoved(task, sortOrder) {
+  if (task?.id == null || moveEmittedForTask.value === task.id) return;
+  moveEmittedForTask.value = task.id;
+  emit('task-moved', { task, columnId: Number(props.column.id), sortOrder });
+  setTimeout(() => { moveEmittedForTask.value = null; }, 500);
+}
+
+function onListChange(evt) {
+  emit('update:tasks', [...localTasks.value]);
+  if (!evt) return;
+  if (evt.added) {
+    const newIndex = evt.added.newIndex ?? 0;
+    const task = localTasks.value[newIndex] ?? evt.added.element;
+    emitTaskMoved(task, newIndex);
+  } else if (evt.moved) {
+    const task = localTasks.value[evt.moved.newIndex];
+    if (task?.id != null) {
+      emit('task-moved', { task, columnId: Number(props.column.id), sortOrder: evt.moved.newIndex });
+    }
+  }
+}
+
+function onAdd(evt) {
+  if (!evt || evt.newIndex == null) return;
+  nextTick(() => {
+    const task = localTasks.value[evt.newIndex];
+    emitTaskMoved(task, evt.newIndex);
+  });
+}
 
 const editing = ref(false);
 const editName = ref('');
@@ -113,20 +166,19 @@ function saveEdit() {
   editing.value = false;
 }
 
-function onDragEnd(evt) {
+function onDragStart() {
+  isDragging.value = true;
+  emit('drag-over');
+}
+
+function onDragMove() {
+  emit('drag-over');
+  return true;
+}
+
+function onDragEnd() {
   isDragging.value = false;
-  if (!evt) return;
-  if (evt.newIndex == null || evt.to == null) return;
-  const toColEl = evt.to.closest?.('[data-column-id]');
-  const toColumnId = toColEl?.getAttribute?.('data-column-id');
-  if (!toColumnId) return;
-  const task = localTasks.value[evt.newIndex];
-  if (!task?.id) return;
-  emit('task-moved', {
-    task,
-    columnId: toColumnId,
-    sortOrder: evt.newIndex,
-  });
+  emit('drag-end');
 }
 
 </script>

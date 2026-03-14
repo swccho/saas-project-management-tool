@@ -3,8 +3,7 @@
     <h3 class="text-sm font-semibold text-gray-900">Quick Actions</h3>
     <div class="flex flex-wrap gap-2">
       <router-link
-        v-if="projectId"
-        :to="`/projects/${projectId}/board`"
+        :to="projectId ? `/projects/${projectId}/board` : '/projects'"
         class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
       >
         <Plus class="h-4 w-4" />

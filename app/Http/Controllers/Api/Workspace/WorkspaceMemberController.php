@@ -19,6 +19,7 @@ class WorkspaceMemberController extends Controller
 
         $members = $workspace->members()->with('user')->orderBy('created_at')->get();
 
+        $profileService = app(\App\Services\ProfileService::class);
         $data = $members->map(fn ($m) => [
             'id' => $m->id,
             'user_id' => $m->user_id,
@@ -28,6 +29,7 @@ class WorkspaceMemberController extends Controller
                 'id' => $m->user->id,
                 'name' => $m->user->name,
                 'email' => $m->user->email,
+                'avatar_url' => $m->user->avatar ? $profileService->getAvatarUrl($m->user) : null,
             ],
         ]);
 
@@ -63,6 +65,7 @@ class WorkspaceMemberController extends Controller
             ['user_id' => $member->user_id, 'new_role' => $request->validated('role')]
         );
 
+        $profileService = app(\App\Services\ProfileService::class);
         return ApiResponse::success(data: [
             'id' => $member->id,
             'user_id' => $member->user_id,
@@ -72,6 +75,7 @@ class WorkspaceMemberController extends Controller
                 'id' => $member->user->id,
                 'name' => $member->user->name,
                 'email' => $member->user->email,
+                'avatar_url' => $member->user->avatar ? $profileService->getAvatarUrl($member->user) : null,
             ],
         ]);
     }

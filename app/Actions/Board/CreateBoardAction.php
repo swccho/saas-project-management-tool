@@ -15,10 +15,10 @@ class CreateBoardAction
     ) {}
 
     private const DEFAULT_COLUMNS = [
-        'Backlog',
+        'Blocked',
         'Todo',
         'In Progress',
-        'Review',
+        'Review & Testing',
         'Done',
     ];
 

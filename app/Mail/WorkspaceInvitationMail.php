@@ -30,7 +30,8 @@ class WorkspaceInvitationMail extends Mailable
 
     public function content(): Content
     {
-        $acceptUrl = rtrim(config('app.url'), '/') . '/invitations/accept/' . $this->invitation->token;
+        $baseUrl = rtrim(env('FRONTEND_URL', config('app.url')), '/');
+        $acceptUrl = $baseUrl . '/invitations/accept/' . $this->invitation->token;
 
         return new Content(
             view: 'emails.workspace-invitation',

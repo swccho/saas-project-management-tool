@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen bg-[#FAFAFA]">
+  <div class="flex h-screen overflow-hidden bg-[#FAFAFA]">
     <aside
       :class="[
         'flex flex-col border-r border-gray-200 bg-white transition-all',
@@ -28,7 +28,7 @@
         </router-link>
       </nav>
     </aside>
-    <div class="flex flex-1 flex-col">
+    <div class="flex min-h-0 min-w-0 flex-1 flex-col">
       <header class="flex h-14 items-center justify-between border-b border-gray-200 bg-white px-6">
         <div class="flex items-center gap-4">
           <button
@@ -45,11 +45,20 @@
           />
         </div>
         <div class="flex items-center gap-2">
+          <a
+            href="/guide"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="View guide"
+            class="rounded p-1.5 text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+          >
+            <Info class="h-5 w-5" />
+          </a>
           <NotificationDropdown />
           <UserMenu />
         </div>
       </header>
-      <main class="flex-1 p-6">
+      <main class="min-h-0 min-w-0 flex-1 overflow-auto p-6">
         <router-view />
       </main>
     </div>
@@ -59,7 +68,7 @@
 <script setup>
 import { onMounted, onUnmounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { LayoutDashboard, FolderKanban, ListTodo, Settings, Activity, Calendar } from 'lucide-vue-next';
+import { LayoutDashboard, FolderKanban, ListTodo, Settings, Activity, Calendar, Info } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/authStore';
 import { useUiStore } from '../stores/uiStore';
 import { useWorkspaceStore } from '../stores/workspaceStore';

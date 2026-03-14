@@ -43,7 +43,7 @@ class TaskController extends Controller
                 'name' => $c->name,
                 'color' => $c->color,
                 'sort_order' => $c->sort_order,
-                'tasks' => TaskResource::collection($c->tasks),
+                'tasks' => $c->tasks->map(fn ($t) => (new TaskResource($t))->resolve())->values()->all(),
             ]),
         ];
 
