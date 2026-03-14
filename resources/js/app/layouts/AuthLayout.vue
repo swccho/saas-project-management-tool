@@ -9,7 +9,7 @@
     >
       <div class="mx-auto max-w-md">
         <h1 class="text-2xl font-bold tracking-tight text-gray-900">
-          SaaS PM
+          Kanbix
         </h1>
         <p class="mt-3 text-lg font-medium text-gray-700">
           Manage projects, tasks, and teams effortlessly.

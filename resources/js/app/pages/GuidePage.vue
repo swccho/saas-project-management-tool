@@ -2,12 +2,12 @@
   <div class="min-h-screen bg-[#FAFAFA] py-12 px-4">
     <div class="mx-auto max-w-2xl space-y-10">
       <header class="text-center">
-        <h1 class="text-3xl font-bold tracking-tight text-gray-900">SaaS PM</h1>
+        <h1 class="text-3xl font-bold tracking-tight text-gray-900">Kanbix</h1>
         <p class="mt-2 text-lg text-gray-600">Project Management for Teams</p>
       </header>
 
       <section class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h2 class="text-xl font-semibold text-gray-900">What is SaaS PM?</h2>
+        <h2 class="text-xl font-semibold text-gray-900">What is Kanbix?</h2>
         <p class="mt-3 text-gray-600">
           A production-ready team collaboration platform that helps teams organize projects, manage tasks, and collaborate efficiently.
         </p>

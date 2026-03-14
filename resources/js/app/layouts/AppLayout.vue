@@ -8,7 +8,7 @@
     >
       <div class="flex h-14 items-center border-b border-gray-200 px-4">
         <span v-if="!uiStore.sidebarCollapsed" class="text-lg font-semibold text-gray-900">
-          SaaS PM
+          Kanbix
         </span>
       </div>
       <nav class="flex-1 space-y-1 p-4">
