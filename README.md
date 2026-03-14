@@ -1,26 +1,67 @@
 # Kanbix
 
-Kanbix is a modern SaaS project management platform built with Laravel and Vue. It helps teams plan work, track tasks, collaborate efficiently, and manage projects through a clean Kanban-based workflow.
+**Modern project management for teams.** Plan work, track progress, and collaborate in one place.
 
-## Key Features
+Kanbix is a full-featured SaaS project management platform built with Laravel and Vue. It includes workspaces, Kanban boards, task tracking, comments, notifications, and workspace management—designed so recruiters and visitors can try it in seconds.
 
-- Workspace management
-- Project and board management
-- Kanban workflows
-- Task tracking with labels and subtasks
-- Comments and collaboration
-- Notifications
-- Dashboard and analytics
-- Team invitations
-- Workspace settings
+---
 
-## Tech Stack
+## Try the live demo
+
+**[→ Live demo: https://kanbix.thethemeai.com/](https://kanbix.thethemeai.com/)** — Try the app with preloaded demo data. Use the credentials below to sign in and explore.
+
+| | |
+|---|---|
+| **Email** | `demo@kanbix.example` |
+| **Password** | `password` |
+
+Sign in at the link above to open the **Kanbix Demo** workspace with sample projects, boards, and tasks. You can click through the dashboard, boards, task details, and settings.
+
+---
+
+## Features
+
+| Workspaces | Boards & tasks | Collaboration |
+|------------|----------------|----------------|
+| Multi-tenant workspaces, roles, and members | Kanban boards, columns, drag-and-drop | Comments, mentions, file attachments |
+| **Dashboard & analytics** | **Notifications & activity** | **Settings** |
+| Overview, my tasks, overdue, due soon | In-app notifications, activity feeds | Workspace branding, preferences, audit log |
+
+---
+
+## Screenshots
+
+| Landing | Dashboard |
+|---------|-----------|
+| [![Landing](screenshots/landing.png)](screenshots/landing.png) | [![Dashboard](screenshots/dashboard.png)](screenshots/dashboard.png) |
+
+| Board view | Calendar |
+|-------------|----------|
+| [![Board](screenshots/board.png)](screenshots/board.png) | [![Calendar](screenshots/calendar.png)](screenshots/calendar.png) |
+
+| Task detail / modal | Settings |
+|---------------------|----------|
+| [![Task modal](screenshots/task-modal.png)](screenshots/task-modal.png) | [![Settings](screenshots/settings.png)](screenshots/settings.png) |
+
+---
+
+## Architecture / What I built
+
+- **Multi-tenant workspace design** — Workspaces isolate data; every project, board, and task is scoped to a workspace. Role-based access (owner, admin, member) and workspace-level policies.
+- **Auth & API** — Laravel Sanctum for API auth; register, login, password reset, and invitation-based onboarding.
+- **Notifications & activity** — In-app notifications (e.g. task assigned, mentions), activity logs per task and project, and workspace audit logs for key actions.
+- **Modular Laravel backend** — Services for business logic, Form Requests for validation, Policies for authorization. Separate modules for workspaces, projects, boards, tasks, comments, labels, and invitations.
+- **Frontend state & UX** — Vue 3, Pinia for state (auth, workspace, UI), Vue Router. Dashboard, board view, task modals/drawers, calendar, my tasks, and workspace/project settings.
+
+---
+
+## Tech stack
 
 Laravel · Vue · MySQL · Tailwind CSS · Pinia · Sanctum
 
 ---
 
-## GitHub Repository Description
+## GitHub repository description
 
 For portfolio visibility, set the repository description in GitHub (Settings → Description) to:
 
