@@ -1,19 +1,40 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '../stores/authStore';
 import AppLayout from '../layouts/AppLayout.vue';
+import AuthLayout from '../layouts/AuthLayout.vue';
 
 const routes = [
   {
     path: '/login',
-    name: 'login',
-    component: () => import('../pages/auth/LoginPage.vue'),
+    component: AuthLayout,
     meta: { guest: true },
+    children: [
+      { path: '', name: 'login', component: () => import('../pages/auth/LoginPage.vue') },
+    ],
   },
   {
     path: '/register',
-    name: 'register',
-    component: () => import('../pages/auth/RegisterPage.vue'),
+    component: AuthLayout,
     meta: { guest: true },
+    children: [
+      { path: '', name: 'register', component: () => import('../pages/auth/RegisterPage.vue') },
+    ],
+  },
+  {
+    path: '/forgot-password',
+    component: AuthLayout,
+    meta: { guest: true },
+    children: [
+      { path: '', name: 'forgot-password', component: () => import('../pages/auth/ForgotPasswordPage.vue') },
+    ],
+  },
+  {
+    path: '/reset-password',
+    component: AuthLayout,
+    meta: { guest: true },
+    children: [
+      { path: '', name: 'reset-password', component: () => import('../pages/auth/ResetPasswordPage.vue') },
+    ],
   },
   {
     path: '/invitations/accept/:token',

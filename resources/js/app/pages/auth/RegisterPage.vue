@@ -1,62 +1,60 @@
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-[#FAFAFA] px-4">
-    <Card class="w-full max-w-md">
-      <CardHeader>
-        <h1 class="text-2xl font-semibold tracking-tight">Create an account</h1>
-        <p v-if="invitationPreview" class="text-sm text-gray-500">
-          Join {{ invitationPreview.workspace_name }} – {{ invitationPreview.inviter_name }} invited you
+  <Card class="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
+    <CardHeader>
+      <h1 class="text-2xl font-semibold tracking-tight">Create an account</h1>
+      <p v-if="invitationPreview" class="text-sm text-gray-500">
+        Join {{ invitationPreview.workspace_name }} – {{ invitationPreview.inviter_name }} invited you
+      </p>
+      <p v-else class="text-sm text-gray-500">Enter your details to get started</p>
+    </CardHeader>
+    <CardContent>
+      <form class="space-y-4" @submit.prevent="submit">
+        <Input
+          v-model="name"
+          label="Name"
+          placeholder="John Doe"
+          required
+          :error="errors.name"
+        />
+        <Input
+          v-model="email"
+          type="email"
+          label="Email"
+          placeholder="you@example.com"
+          required
+          :error="errors.email"
+          :disabled="!!invitationToken"
+        />
+        <Input
+          v-model="password"
+          type="password"
+          label="Password"
+          required
+          :error="errors.password"
+        />
+        <Input
+          v-model="passwordConfirmation"
+          type="password"
+          label="Confirm password"
+          required
+          :error="errors.password_confirmation"
+        />
+        <p v-if="errors.general" class="text-sm text-red-500">{{ errors.general }}</p>
+        <p v-if="errors.email" class="text-sm text-gray-600">
+          <router-link :to="loginUrl" class="font-medium text-indigo-600">Sign in instead</router-link>
         </p>
-        <p v-else class="text-sm text-gray-500">Enter your details to get started</p>
-      </CardHeader>
-      <CardContent>
-        <form class="space-y-4" @submit.prevent="submit">
-          <Input
-            v-model="name"
-            label="Name"
-            placeholder="John Doe"
-            required
-            :error="errors.name"
-          />
-          <Input
-            v-model="email"
-            type="email"
-            label="Email"
-            placeholder="you@example.com"
-            required
-            :error="errors.email"
-            :disabled="!!invitationToken"
-          />
-          <Input
-            v-model="password"
-            type="password"
-            label="Password"
-            required
-            :error="errors.password"
-          />
-          <Input
-            v-model="passwordConfirmation"
-            type="password"
-            label="Confirm password"
-            required
-            :error="errors.password_confirmation"
-          />
-          <p v-if="errors.general" class="text-sm text-red-500">{{ errors.general }}</p>
-          <p v-if="errors.email" class="text-sm text-gray-600">
-            <router-link :to="loginUrl" class="font-medium text-indigo-600">Sign in instead</router-link>
-          </p>
-          <Button type="submit" class="w-full" :loading="loading">
-            Create account
-          </Button>
-        </form>
-        <p class="mt-4 text-center text-sm text-gray-500">
-          Already have an account?
-          <router-link :to="loginLink" class="font-medium text-indigo-600 hover:text-indigo-500">
-            Sign in
-          </router-link>
-        </p>
-      </CardContent>
-    </Card>
-  </div>
+        <Button type="submit" class="w-full" :loading="loading">
+          {{ loading ? 'Creating account...' : 'Create account' }}
+        </Button>
+      </form>
+      <p class="mt-4 text-center text-sm text-gray-500">
+        Already have an account?
+        <router-link :to="loginLink" class="font-medium text-indigo-600 hover:text-indigo-500">
+          Sign in
+        </router-link>
+      </p>
+    </CardContent>
+  </Card>
 </template>
 
 <script setup>
